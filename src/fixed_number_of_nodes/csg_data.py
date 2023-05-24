@@ -33,6 +33,7 @@ add_rule("", "", [])
 RULE_ARITY = [len(l) for l in CHILD_TYPES]
 MAX_ARITY = max(RULE_ARITY)
 NUMBER_OF_RULES = len(RULE_NAMES)
+EMPTY_RULE = NUMBER_OF_RULES - 1
 
 #flatten CHILD_TYPES into a 1D list
 for i in range(len(CHILD_TYPES)):

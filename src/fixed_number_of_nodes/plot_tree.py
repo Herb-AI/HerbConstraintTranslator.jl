@@ -66,24 +66,31 @@ def hierarchy_pos(G, root=None, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5)
 
     return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
 
-def plot_tree(parent, rule=None, show_types=False, show_empty_nodes=False):
+def plot_tree(parent, rule=None, show_rules=True, show_types=False, show_node_index=False, show_empty_nodes=False, show_lambda_string=None):
     """
     :param parent: Array(0..N-2) of var int representing the parent of each node. (Node N-1 is assumed to be the root node)
     :param rule: Array(0..N-1) of var int representing the rule of each node
+    :param show_rules: boolean indicating whether the rule name of the nodes should be shown
     :param show_types: boolean indicating whether the rule type of the nodes should be shown
+    :param show_node_index: boolean indicating if the the node index should be shown INSTEAD of the content of the node
     :param show_empty_nodes: boolean indicating whether nodes with the empty rule should be shown
+    :param show_lambda_string: lambda: n -> string. (for debugging purposes)
     """
+    N = len(parent)
     labels = None
     if rule is not None:
         for r in enumerate(rule):
             if r[1] is None:
                 raise Exception(f"Cannot plot a tree: 'rule[{r[0]}]' is undecided")
-        labels = {n: show_types * f"{TYPE_NAMES[TYPES[rule[n].value()]]}: " + RULE_NAMES[rule[n].value()] for n in range(len(parent) + 1)}
-        for n in range(len(parent) + 1):
+        labels = {n: (show_lambda_string(n) if not show_lambda_string is None else "") +
+                     show_node_index * f"[{n}] " +
+                     show_types * f"{TYPE_NAMES[TYPES[rule[n].value()]]}: " +
+                     show_rules * RULE_NAMES[rule[n].value()] for n in range(N)}
+        for n in range(N):
             if RULE_NAMES[rule[n].value()] == "":
                 del labels[n]
 
-    edges = [e for e in enumerate(parent.value())]
+    edges = [e for e in enumerate(parent.value())][:-1]
     for e in edges:
         if e[1] is None:
             raise Exception(f"Cannot plot a tree: 'parent[{e[0]}]' is undecided")
@@ -93,7 +100,7 @@ def plot_tree(parent, rule=None, show_types=False, show_empty_nodes=False):
 
     G=nx.Graph()
     G.add_edges_from(edges)
-    pos = hierarchy_pos(G, len(parent))
+    pos = hierarchy_pos(G, N-1) #we assume node N-1 is the root
 
     nx.draw(G, pos=pos, with_labels=labels is not None, labels=labels, node_color="white")
     plt.show()
