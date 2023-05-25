@@ -53,7 +53,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         Example: 2'th order uncle is the left uncle of your parent
         :return: constraint that enforces index[n] > index[k'th order uncle]
         """
-        return [((arity[n] == 0) & (child_index[grand_parent(k, n)] > 0) & (child_index[uncle] == 0) & (parent[uncle] == parent[grand_parent(k, n)]))
+        return [((arity[n] == 0) & (child_index[uncle] < child_index[grand_parent(k, n)]) & (parent[uncle] == parent[grand_parent(k, n)]))
                 .implies(n > uncle) for uncle in range(0, max_n - 1)]
 
     model = Model([
