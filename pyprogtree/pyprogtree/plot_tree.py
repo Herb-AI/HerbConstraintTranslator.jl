@@ -1,6 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-from csg_data import *
+from pyprogtree.grammar import *
 import random
 
 def hierarchy_pos(G, root=None, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5):
@@ -66,8 +66,9 @@ def hierarchy_pos(G, root=None, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5)
 
     return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
 
-def plot_tree(parent, rule=None, show_rules=True, show_types=False, show_node_index=False, show_empty_nodes=False, show_lambda_string=None):
+def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node_index=False, show_empty_nodes=False, show_lambda_string=None):
     """
+    :param g: Grammar
     :param parent: Array(0..N-2) of var int representing the parent of each node. (Node N-1 is assumed to be the root node)
     :param rule: Array(0..N-1) of var int representing the rule of each node
     :param show_rules: boolean indicating whether the rule name of the nodes should be shown
@@ -84,10 +85,10 @@ def plot_tree(parent, rule=None, show_rules=True, show_types=False, show_node_in
                 raise Exception(f"Cannot plot a tree: 'rule[{r[0]}]' is undecided")
         labels = {n: (show_lambda_string(n) if not show_lambda_string is None else "") +
                      show_node_index * f"[{n}] " +
-                     show_types * f"{TYPE_NAMES[TYPES[rule[n].value()]]}: " +
-                     show_rules * RULE_NAMES[rule[n].value()] for n in range(N)}
+                     show_types * f"{g.TYPE_NAMES[g.TYPES[rule[n].value()]]}: " +
+                     show_rules * g.RULE_NAMES[rule[n].value()] for n in range(N)}
         for n in range(N):
-            if RULE_NAMES[rule[n].value()] == "":
+            if g.RULE_NAMES[rule[n].value()] == "":
                 del labels[n]
 
     edges = [e for e in enumerate(parent.value())][:-1]
@@ -96,7 +97,7 @@ def plot_tree(parent, rule=None, show_rules=True, show_types=False, show_node_in
             raise Exception(f"Cannot plot a tree: 'parent[{e[0]}]' is undecided")
 
     if not show_empty_nodes and rule is not None:
-        edges = list(filter(lambda e: TYPE_NAMES[TYPES[rule[e[0]].value()]] != "", edges))
+        edges = list(filter(lambda e: g.TYPE_NAMES[g.TYPES[rule[e[0]].value()]] != "", edges))
 
     G=nx.Graph()
     G.add_edges_from(edges)
