@@ -1,8 +1,9 @@
 from math import log, ceil
 from cpmpy import intvar, Model
 from cpmpy.expressions.globalconstraints import Element, Count
-from pyprogtree.plot_tree import plot_tree
-from pyprogtree.grammar import *
+from src.pyprogtree.grammar import *
+from src.pyprogtree.plot_tree import plot_tree
+
 
 def solve(g, min_n, max_n, max_depth=float("inf")):
     """
