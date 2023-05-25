@@ -44,12 +44,22 @@ def solve(min_n, max_n, max_depth=float("inf")):
             return n
         return parent[grand_parent(k-1, n)]
 
+    def uncle_ordering(k, n):
+        """
+        Example: 0'th order uncle is your left brother
+        Example: 1'th order uncle is your left uncle
+        Example: 2'th order uncle is the left uncle of your parent
+        :return: constraint that enforces index[n] > index[k'th order uncle]
+        """
+        return [((arity[n] == 0) & (child_index[grand_parent(k, n)] > 0) & (child_index[uncle] == 0) & (parent[uncle] == parent[grand_parent(k, n)]))
+                .implies(n > uncle) for uncle in range(0, max_n - 1)]
+
     model = Model([
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
         depth[max_n - 1] == 0,
 
-        # Assumption: the root has non-existing parent '-1'.
-        parent[max_n - 1] == -1,
+        # Assumption: the root is its own parent.
+        parent[max_n - 1] == max_n - 1,
 
         # Enforcing the last min_n nodes are non-empty
         [rule[n] != EMPTY_RULE for n in range(max_n-min_n, max_n)],
@@ -79,20 +89,22 @@ def solve(min_n, max_n, max_depth=float("inf")):
 
         # Calculate the subtree size for each node
         # todo: subtree_size is yet unused, but maybe helpful for the traversal order
-        [subtree_size[n] == 1+sum([(parent[child] == n) * subtree_size[child] for child in range(max_n - 1)]) for n in range(max_n)],
+        [subtree_size[n] == 1 + sum([(parent[child] == n) * subtree_size[child] for child in range(max_n - 1)]) for n in
+         range(max_n)],
 
-        # Assumption: Node 0 is the first node of left-first depth-first traversal
+        # (a) Node 0 is the first node of left-first depth-first traversal
         [child_index[grand_parent(k, 0)] == 0 for k in range(max_depth)],
 
-        # Leaf nodes go immediately after their left brother
-        # todo:     brother doesn't exist --> leaf nodes go immediately after their left uncle
-        #           uncle doesn't exist --> leaf nodes go immediately after their left granduncle
-        #           etc...
-        [[((arity[n] == 0) & (parent[brother] == parent[n]) & (child_index[brother] == child_index[n] - 1)).implies(n == subtree_size[n] + brother)
+        # (b) Parents go immediately after their right child
+        [(child_index[n] == arity[parent[n]] - 1).implies(parent[n] == n + 1) for n in range(0, max_n - 1)],
+
+        # (c) Leaf nodes go immediately after their left brother
+        [[((arity[n] == 0) & (parent[brother] == parent[n]) & (child_index[brother] == child_index[n] - 1)).implies(n == brother + 1)
            for brother in range(0, max_n - 1)] for n in range(0, max_n - 1)],
 
-        # Parents go immediately after their right child
-        [(child_index[n] == arity[parent[n]] - 1).implies(parent[n] == n + 1) for n in range(0, max_n - 1)]
+        # (c') Lead nodes have to respect uncle ordering
+        # todo: optimize these very, very expensive ordering constraints
+        [[uncle_ordering(k, n) for n in range(max_n - 1)] for k in range(max_depth)]
     ])
 
     # Solving
