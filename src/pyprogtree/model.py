@@ -31,39 +31,17 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
 
     # All decision variables are indexed by node
     rule = intvar(0, g.NUMBER_OF_RULES - 1, shape = max_n, name="Rules")
-    parent = intvar(-1, max_n-1, shape = max_n, name="Parent")
+    parent = intvar(-1, max_n-1, shape = max_n-1, name="Parent")
     depth = intvar(0, max_depth, shape = max_n, name="Distance")
     arity = intvar(0, g.MAX_ARITY, shape = max_n, name="Arity")
     child_index = intvar(0, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
     ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_n-1), name="AncestorPath")
-
-    def grand_parent(k, n):
-        """
-        Example: grand_parent(3, n) == parent[parent[parent[n]]]
-        :return: k'th order grandparent of n
-        """
-        if k == 0:
-            return n
-        return parent[grand_parent(k-1, n)]
-
-    def uncle_ordering(k, n):
-        """
-        Example: 0'th order uncle is your left brother
-        Example: 1'th order uncle is your left uncle
-        Example: 2'th order uncle is the left uncle of your parent
-        :return: constraint that enforces index[n] > index[k'th order uncle]
-        """
-        return [((arity[n] == 0) & (child_index[uncle] < child_index[grand_parent(k, n)]) & (parent[uncle] == parent[grand_parent(k, n)]))
-                .implies(n > uncle) for uncle in range(0, max_n - 1)]
 
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_n-1)][::-1])
 
     model = Model([
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
         depth[max_n - 1] == 0,
-
-        # Assumption: the root is its own parent.
-        parent[max_n - 1] == max_n - 1,
 
         # Enforcing the last min_n nodes are non-empty
         [rule[n] != g.EMPTY_RULE for n in range(max_n-min_n, max_n)],
