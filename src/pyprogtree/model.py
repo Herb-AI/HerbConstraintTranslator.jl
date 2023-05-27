@@ -68,7 +68,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         # Enforcing the last min_n nodes are non-empty
         [rule[n] != g.EMPTY_RULE for n in range(max_n-min_n, max_n)],
         
-        # TODO: Enforce empty nodes to always be leftmost
+        # Enforce empty nodes are always leftmost
+        
 
         # Non-Root nodes are 1 more away than their parents
         [depth[n] == depth[parent[n]] + 1 for n in range(max_n - 1)],
@@ -93,13 +94,13 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_n-1)],
 
         # Enforce each node's path to be an extension of its parents path 
-        [ancestor_path[n, d] == ancestor_path[parent[n], d] for n in range(max_n-1) for d in range(depth[n]-1)],
+        [(d < depth[n]-1).implies(ancestor_path[n, d] == ancestor_path[parent[n], d]) for n in range(max_n-1) for d in range(max_n-1)],
 
         # Enforce each non-root node's last path symbol to be its child index
         [ancestor_path[n, depth[n]-1] == child_index[n] for n in range(max_n-1)],
 
         # Enforce the remaining path symbols to be max_arity
-        [ancestor_path[n, d] == g.MAX_ARITY for n in range(max_n-1) for d in range(depth[n]+1, max_n-1)],
+        [(d > depth[n]).implies(ancestor_path[n, d] == g.MAX_ARITY) for n in range(max_n-1) for d in range(max_n-1)],
 
         # Enfoce a lexicographic ordering (NOTE: might suffer from integer overflow issue as the sums quickly get very large)
         [sum(ancestor_path[n] * base) < sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
