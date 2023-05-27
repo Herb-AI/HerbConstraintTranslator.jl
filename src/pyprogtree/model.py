@@ -56,7 +56,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         return [((arity[n] == 0) & (child_index[uncle] < child_index[grand_parent(k, n)]) & (parent[uncle] == parent[grand_parent(k, n)]))
                 .implies(n > uncle) for uncle in range(0, max_n - 1)]
 
-    base = np.array([g.MAX_ARITY ** i for i in range(max_n-1)][::-1])
+    base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_n-1)][::-1])
 
     model = Model([
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
@@ -69,7 +69,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [rule[n] != g.EMPTY_RULE for n in range(max_n-min_n, max_n)],
         
         # Enforce empty nodes are always leftmost
-        
+        #[],
 
         # Non-Root nodes are 1 more away than their parents
         [depth[n] == depth[parent[n]] + 1 for n in range(max_n - 1)],
@@ -100,7 +100,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [ancestor_path[n, depth[n]-1] == child_index[n] for n in range(max_n-1)],
 
         # Enforce the remaining path symbols to be max_arity
-        [(d > depth[n]).implies(ancestor_path[n, d] == g.MAX_ARITY) for n in range(max_n-1) for d in range(max_n-1)],
+        [(d >= depth[n]).implies(ancestor_path[n, d] == g.MAX_ARITY) for n in range(max_n-1) for d in range(max_n-1)],
 
         # Enfoce a lexicographic ordering (NOTE: might suffer from integer overflow issue as the sums quickly get very large)
         [sum(ancestor_path[n] * base) < sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
@@ -116,4 +116,5 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                   show_empty_nodes=True,
                   show_lambda_string=lambda n: f"{''}")
     print(model.status())
+    print(ancestor_path.value())
     return is_optimal
