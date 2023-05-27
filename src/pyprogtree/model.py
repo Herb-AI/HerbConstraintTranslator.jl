@@ -15,7 +15,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     :return:
     """
 
-    max_depth = min(max_n - 1, max_depth)
+    max_depth = max_n - 1 #min(max_n - 1, max_depth)
 
     # Todo: export fields from the (julia) csg struct to a python class that holds:
     #    * TYPES
@@ -37,17 +37,13 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     child_index = intvar(0, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
     ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_n-1), name="AncestorPath")
 
+    number_of_empty_nodes = intvar(0, min_n, name="NumberOfEmptyNodes")
+
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_n-1)][::-1])
 
     model = Model([
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
         depth[max_n - 1] == 0,
-
-        # Enforcing the last min_n nodes are non-empty
-        [rule[n] != g.EMPTY_RULE for n in range(max_n-min_n, max_n)],
-        
-        # Enforce empty nodes are always leftmost
-        #[],
 
         # Non-Root nodes are 1 more away than their parents
         [depth[n] == depth[parent[n]] + 1 for n in range(max_n - 1)],
@@ -56,11 +52,13 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [arity[n] == Count(parent, n) for n in range(max_n)],
 
         # Enforcing the arity according to the number of children per rule
-        # Note that '>=' is used instead of the expected '=='
-        # This is such that empty rule nodes can freely be added as children
-        # This makes it such that we can also find tree with less than max_n nodes
-        # We might want to find another way of reducing the number of nodes in the future
-        [arity[n] == Element(g.RULE_ARITY, rule[n]) for n in range(max_n)],
+        [(n > number_of_empty_nodes).implies(arity[n] == Element(g.RULE_ARITY, rule[n])) for n in range(1, max_n)],
+
+        # Enforcing the number of empty nodes
+        [(n < number_of_empty_nodes).implies(rule[n] == g.EMPTY_RULE) for n in range(max_n)],
+
+        # Enforce the inner nodes of the trail of empty nodes have arity 1
+        [(n <= number_of_empty_nodes).implies(arity[n] == 1) for n in range(1, max_n)],
 
         # Indexing children of the same parent
         [child_index[0] == 0] + [child_index[n] == Count(parent[:n], parent[n]) for n in range(1, max_n-1)],
@@ -94,5 +92,4 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                   show_empty_nodes=True,
                   show_lambda_string=lambda n: f"{''}")
     print(model.status())
-    print(ancestor_path.value())
     return is_optimal
