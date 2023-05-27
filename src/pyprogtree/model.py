@@ -3,7 +3,7 @@ from cpmpy import intvar, Model
 from cpmpy.expressions.globalconstraints import Element, Count
 from src.pyprogtree.grammar import *
 from src.pyprogtree.plot_tree import plot_tree
-
+import numpy as np
 
 def solve(g, min_n, max_n, max_depth=float("inf")):
     """
@@ -35,7 +35,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     depth = intvar(0, max_depth, shape = max_n, name="Distance")
     arity = intvar(0, g.MAX_ARITY, shape = max_n, name="Arity")
     child_index = intvar(0, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
-    subtree_size = intvar(0, max_n, shape = max_n, name="SubtreeSize")
+    ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_n-1), name="AncestorPath")
 
     def grand_parent(k, n):
         """
@@ -56,6 +56,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         return [((arity[n] == 0) & (child_index[uncle] < child_index[grand_parent(k, n)]) & (parent[uncle] == parent[grand_parent(k, n)]))
                 .implies(n > uncle) for uncle in range(0, max_n - 1)]
 
+    base = np.array([g.MAX_ARITY ** i for i in range(max_n-1)][::-1])
+
     model = Model([
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
         depth[max_n - 1] == 0,
@@ -65,6 +67,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
 
         # Enforcing the last min_n nodes are non-empty
         [rule[n] != g.EMPTY_RULE for n in range(max_n-min_n, max_n)],
+        
+        # TODO: Enforce empty nodes to always be leftmost
 
         # Non-Root nodes are 1 more away than their parents
         [depth[n] == depth[parent[n]] + 1 for n in range(max_n - 1)],
@@ -85,28 +89,20 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         # Enforce the children of each node are of the correct type: TYPES[rule[n]] == CHILD_TYPES[rule[parent[n]], child_index[n]]
         [Element(g.TYPES, rule[n]) == Element(g.CHILD_TYPES, g.MAX_ARITY*Element(rule, parent[n])+child_index[n]) for n in range(max_n-1)],
 
-        ########################################################################
-        ##########     WIP: Constraints for Traversal Order below     ##########
-        ########################################################################
+        # Fix ancestor path of the root
+        [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_n-1)],
 
-        # Calculate the subtree size for each node
-        # todo: subtree_size is yet unused, but maybe helpful for the traversal order
-        [subtree_size[n] == 1 + sum([(parent[child] == n) * subtree_size[child] for child in range(max_n - 1)]) for n in
-         range(max_n)],
+        # Enforce each node's path to be an extension of its parents path 
+        [ancestor_path[n, d] == ancestor_path[parent[n], d] for n in range(max_n-1) for d in range(depth[n]-1)],
 
-        # (a) Node 0 is the first node of left-first depth-first traversal
-        [child_index[grand_parent(k, 0)] == 0 for k in range(max_depth)],
+        # Enforce each non-root node's last path symbol to be its child index
+        [ancestor_path[n, depth[n]-1] == child_index[n] for n in range(max_n-1)],
 
-        # (b) Parents go immediately after their right child
-        [(child_index[n] == arity[parent[n]] - 1).implies(parent[n] == n + 1) for n in range(0, max_n - 1)],
+        # Enforce the remaining path symbols to be max_arity
+        [ancestor_path[n, d] == g.MAX_ARITY for n in range(max_n-1) for d in range(depth[n]+1, max_n-1)],
 
-        # (c) Leaf nodes go immediately after their left brother
-        [[((arity[n] == 0) & (parent[brother] == parent[n]) & (child_index[brother] == child_index[n] - 1)).implies(n == brother + 1)
-           for brother in range(0, max_n - 1)] for n in range(0, max_n - 1)],
-
-        # (c') Lead nodes have to respect uncle ordering
-        # todo: optimize these very, very expensive ordering constraints
-        [[uncle_ordering(k, n) for n in range(max_n - 1)] for k in range(max_depth)]
+        # Enfoce a lexicographic ordering (NOTE: might suffer from integer overflow issue as the sums quickly get very large)
+        [sum(ancestor_path[n] * base) < sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
     ])
 
     # Solving
