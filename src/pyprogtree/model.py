@@ -44,8 +44,6 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
         depth[max_n - 1] == 0,
 
-        init_index > 0,
-
         # node is empty iff its before the initial index
         [(n < init_index) == (rule[n] == g.EMPTY_RULE) for n in range(max_n)],
 
