@@ -34,26 +34,32 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     parent = intvar(-1, max_n-1, shape = max_n-1, name="Parent")
     depth = intvar(0, max_depth, shape = max_n, name="Distance")
     arity = intvar(0, g.MAX_ARITY, shape = max_n, name="Arity")
-    child_index = intvar(0, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
-    ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_n-1), name="AncestorPath")
+    child_index = intvar(1-max_n+min_n, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
+    init_index = intvar(0, max_n-min_n, name="InitialIndex")
+    ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_depth), name="AncestorPath")
 
-    base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_n-1)][::-1])
+    base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
-    model = Model([
+    model = Model(
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
         depth[max_n - 1] == 0,
 
-        # Enforcing the last min_n nodes are non-empty
-        [rule[n] != g.EMPTY_RULE for n in range(max_n-min_n, max_n)],
-        
-        # Enforce empty nodes are always leftmost
-        #[],
+        init_index > 0,
+
+        # node is empty iff its before the initial index
+        [(n < init_index) == (rule[n] == g.EMPTY_RULE) for n in range(max_n)],
 
         # Non-Root nodes are 1 more away than their parents
         [depth[n] == depth[parent[n]] + 1 for n in range(max_n - 1)],
+        # Empty nodes have depth 1
+        #[(n < init_index).implies(depth[n] == 1) for n in range(max_n - 1)],
 
-        # Enforcing the arity according to the tree structure
-        [arity[n] == Count(parent, n) for n in range(max_n)],
+        # Enforcing the arity according to the tree structure (except the leftmost leaf)
+        [(n != init_index).implies(arity[n] == Count(parent, n)) for n in range(max_n-1)],
+        [(n == init_index).implies(arity[n] == Count(parent, n) - init_index) for n in range(max_n-1)],
+
+        # Empties are leftmost tail
+        [(n < init_index).implies(parent[n] == init_index) for n in range(max_n-1)],
 
         # Enforcing the arity according to the number of children per rule
         # Note that '>=' is used instead of the expected '=='
@@ -63,26 +69,43 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [arity[n] == Element(g.RULE_ARITY, rule[n]) for n in range(max_n)],
 
         # Indexing children of the same parent
-        [child_index[0] == 0] + [child_index[n] == Count(parent[:n], parent[n]) for n in range(1, max_n-1)],
+        (init_index == 0).implies(child_index[0] == 0),
+        [(n >= init_index).implies(child_index[n] == Count(parent[:n], parent[n])) for n in range(1, max_n-1)],
+        
+        # Child index of empty nodes is negative
+        [(n < init_index).implies(child_index[n] == n - init_index) for n in range(1, max_n-1)],
 
         # Enforce the children of each node are of the correct type: TYPES[rule[n]] == CHILD_TYPES[rule[parent[n]], child_index[n]]
-        [Element(g.TYPES, rule[n]) == Element(g.CHILD_TYPES, g.MAX_ARITY*Element(rule, parent[n])+child_index[n]) for n in range(max_n-1)],
+        [
+            (n >= init_index).implies(
+                   Element(g.TYPES, rule[n]) 
+                == Element(g.CHILD_TYPES, g.MAX_ARITY*Element(rule, parent[n])+child_index[n]))
+            for n in range(max_n-1)
+        ],
 
         # Fix ancestor path of the root
-        [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_n-1)],
+        [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_depth)],
+        
+        # Pad ancestor path of empty nodes with 0s 
+        #[(n < init_index).implies(sum(ancestor_path[n]) == child_index[n]) for n in range(max_n-1)],
 
-        # Enforce each node's path to be an extension of its parents path 
-        [(d < depth[n]-1).implies(ancestor_path[n, d] == ancestor_path[parent[n], d]) for n in range(max_n-1) for d in range(max_n-1)],
+        # Enforce each true node's path to be an extension of its parents path 
+        [
+            (d < depth[n]-1).implies(
+                   ancestor_path[n, d] 
+                == ancestor_path[parent[n], d]) 
+            for n in range(max_n-1) for d in range(max_depth)
+        ],
 
         # Enforce each non-root node's last path symbol to be its child index
         [ancestor_path[n, depth[n]-1] == child_index[n] for n in range(max_n-1)],
 
         # Enforce the remaining path symbols to be max_arity
-        [(d >= depth[n]).implies(ancestor_path[n, d] == g.MAX_ARITY) for n in range(max_n-1) for d in range(max_n-1)],
+        [(d >= depth[n]).implies(ancestor_path[n, d] == g.MAX_ARITY) for n in range(max_n-1) for d in range(max_depth)],
 
         # Enfoce a lexicographic ordering (NOTE: might suffer from integer overflow issue as the sums quickly get very large)
-        [sum(ancestor_path[n] * base) < sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
-    ])
+        [sum(ancestor_path[n] * base) <= sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
+    )
 
     # Solving
     is_optimal = model.solve()
@@ -94,5 +117,5 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                   show_empty_nodes=True,
                   show_lambda_string=lambda n: f"{''}")
     print(model.status())
-    print(ancestor_path.value())
+    print(child_index.value())
     return is_optimal
