@@ -34,10 +34,9 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     parent = intvar(-1, max_n-1, shape = max_n-1, name="Parent")
     depth = intvar(0, max_depth, shape = max_n, name="Distance")
     arity = intvar(0, g.MAX_ARITY, shape = max_n, name="Arity")
-    child_index = intvar(1-max_n+min_n, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
+    child_index = intvar(0, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
     init_index = intvar(0, max_n-min_n, name="InitialIndex")
-    ancestor_path = intvar(1-max_n+min_n, g.MAX_ARITY, shape = (max_n, max_depth), name="AncestorPath")
-
+    ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_depth), name="AncestorPath")
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
     model = Model(
@@ -52,7 +51,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
 
         # Enforcing the arity according to the tree structure
         [
-            IfThenElse(init_index == n, 
+            IfThenElse(init_index == n,
                 arity[n] == Count(parent, n) - init_index,
                 arity[n] == Count(parent, n)
             ) for n in range(max_n)
@@ -69,27 +68,27 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [arity[n] == Element(g.RULE_ARITY, rule[n]) for n in range(max_n)],
 
         # Indexing children of the same parent
-        (init_index == 0).implies(child_index[0] == 0),
-        [(n >= init_index).implies(child_index[n] == Count(parent[:n], parent[n])) for n in range(1, max_n-1)],
-        # Child index of empty nodes is negative
-        [(n < init_index).implies(child_index[n] == n - init_index) for n in range(0, max_n-1)],
+        [(n > init_index).implies(child_index[n] == Count(parent[:n], parent[n])) for n in range(1, max_n-1)],
+
+        # Child index of empty nodes and the initial node is 0
+        [(n <= init_index).implies(child_index[n] == 0) for n in range(0, max_n-1)],
 
         # Enforce the children of each node are of the correct type: TYPES[rule[n]] == CHILD_TYPES[rule[parent[n]], child_index[n]]
         [
             (n >= init_index).implies(
-                   Element(g.TYPES, rule[n]) 
+                   Element(g.TYPES, rule[n])
                 == Element(g.CHILD_TYPES, g.MAX_ARITY*Element(rule, parent[n])+child_index[n]))
             for n in range(max_n-1)
         ],
 
         # Fix ancestor path of the root
         [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_depth)],
-        
-        # Enforce each node's path to be an extension of its parents path 
+
+        # Enforce each node's path to be an extension of its parents path
         [
             (d < depth[n]-1).implies(
-                   ancestor_path[n, d] 
-                == ancestor_path[parent[n], d]) 
+                   ancestor_path[n, d]
+                == ancestor_path[parent[n], d])
             for n in range(max_n-1) for d in range(max_depth)
         ],
 
@@ -98,7 +97,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
 
         # Enforce the remaining path symbols to be max_arity
         [
-            ((d >= depth[n])).implies(
+            (d >= depth[n]).implies(
                 ancestor_path[n, d] == g.MAX_ARITY
             ) 
             for n in range(max_n-1) for d in range(max_depth)
