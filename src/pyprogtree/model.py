@@ -35,9 +35,9 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     depth = intvar(0, max_depth, shape = max_n, name="Distance")
     arity = intvar(0, g.MAX_ARITY, shape = max_n, name="Arity")
     child_index = intvar(0, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
-    ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_n-1), name="AncestorPath")
+    ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_depth), name="AncestorPath")
 
-    base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_n-1)][::-1])
+    base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
     model = Model([
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
@@ -69,16 +69,16 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [Element(g.TYPES, rule[n]) == Element(g.CHILD_TYPES, g.MAX_ARITY*Element(rule, parent[n])+child_index[n]) for n in range(max_n-1)],
 
         # Fix ancestor path of the root
-        [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_n-1)],
+        [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_depth)],
 
         # Enforce each node's path to be an extension of its parents path 
-        [(d < depth[n]-1).implies(ancestor_path[n, d] == ancestor_path[parent[n], d]) for n in range(max_n-1) for d in range(max_n-1)],
+        [(d < depth[n]-1).implies(ancestor_path[n, d] == ancestor_path[parent[n], d]) for n in range(max_n-1) for d in range(max_depth)],
 
         # Enforce each non-root node's last path symbol to be its child index
         [ancestor_path[n, depth[n]-1] == child_index[n] for n in range(max_n-1)],
 
         # Enforce the remaining path symbols to be max_arity
-        [(d >= depth[n]).implies(ancestor_path[n, d] == g.MAX_ARITY) for n in range(max_n-1) for d in range(max_n-1)],
+        [(d >= depth[n]).implies(ancestor_path[n, d] == g.MAX_ARITY) for n in range(max_n-1) for d in range(max_depth)],
 
         # Enfoce a lexicographic ordering (NOTE: might suffer from integer overflow issue as the sums quickly get very large)
         [sum(ancestor_path[n] * base) < sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
