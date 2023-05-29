@@ -77,7 +77,7 @@ def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node
     :param show_empty_nodes: boolean indicating whether nodes with the empty rule should be shown
     :param show_lambda_string: lambda: n -> string. (for debugging purposes)
     """
-    N = len(parent)
+    N = len(parent) + 1
     labels = None
     if rule is not None:
         for r in enumerate(rule):
@@ -91,7 +91,7 @@ def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node
             if g.RULE_NAMES[rule[n].value()] == "":
                 del labels[n]
 
-    edges = [e for e in enumerate(parent.value())][:-1]
+    edges = [e for e in enumerate(parent.value())]
     for e in edges:
         if e[1] is None:
             raise Exception(f"Cannot plot a tree: 'parent[{e[0]}]' is undecided")

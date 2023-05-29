@@ -5,7 +5,7 @@ def run(rules):
     # Create a grammar from rules:
     g = Grammar(rules)
     # Find a solution:
-    solve(g, 15, 15, max_depth=4)
+    solve(g, 5, 15, max_depth=4)
     # TODO: decode the resulting program
 
 if __name__ == "__main__":
