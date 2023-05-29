@@ -30,13 +30,15 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     #  Currently, these fields are stubbed in csg_data.py
 
     # All decision variables are indexed by node
-    rule = intvar(0, g.NUMBER_OF_RULES - 1, shape = max_n, name="Rules")
-    parent = intvar(-1, max_n-1, shape = max_n-1, name="Parent")
-    depth = intvar(0, max_depth, shape = max_n, name="Distance")
-    arity = intvar(0, g.MAX_ARITY, shape = max_n, name="Arity")
-    child_index = intvar(0, g.MAX_ARITY-1, shape = max_n, name="ChildIndex")
-    init_index = intvar(0, max_n-min_n, name="InitialIndex")
-    ancestor_path = intvar(0, g.MAX_ARITY, shape = (max_n, max_depth), name="AncestorPath")
+    rule          = intvar(0,  g.NUMBER_OF_RULES - 1, shape=max_n,                name="Rules")
+    parent        = intvar(-1, max_n-1,               shape=max_n-1,              name="Parent")
+    depth         = intvar(0,  max_depth,             shape=max_n,                name="Distance")
+    arity         = intvar(0,  g.MAX_ARITY,           shape=max_n,                name="Arity")
+    child_index   = intvar(0,  g.MAX_ARITY-1,         shape=max_n,                name="ChildIndex")
+    init_index    = intvar(0,  max_n-min_n,                                       name="InitialIndex")
+    ancestor_path = intvar(0,  g.MAX_ARITY,           shape=(max_n, max_depth),   name="AncestorPath")
+    ancestor_rule = intvar(-1, g.NUMBER_OF_RULES - 1, shape=(max_n-1, max_depth), name="AncestorRule")
+
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
     model = Model(
@@ -81,6 +83,17 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
             for n in range(max_n-1)
         ],
 
+        # Enforce the ancestor rule of each node aligns with its parent's
+        [
+            (d < depth[n]-1).implies(
+                ancestor_rule[n, d] == ancestor_rule[parent[n], d]
+            ) for n in range(max_n-1) for d in range(max_depth)
+        ],
+
+        [ancestor_rule[n, depth[n]-1] == rule[parent[n]] for n in range(max_n-1)],
+
+        [(d >= depth[n]).implies(ancestor_rule[n, d] == -1) for n in range(max_n-1) for d in range(max_depth)],
+
         # Fix ancestor path of the root
         [ancestor_path[max_n-1, d] == g.MAX_ARITY for d in range(max_depth)],
 
@@ -117,7 +130,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                   show_empty_nodes=True,
                   show_lambda_string=lambda n: f"{''}")
     print(model.status())
-    print(ancestor_path.value())
+    print(ancestor_rule.value())
     print("DEPTH:", depth.value())
     print("PARENT:", parent.value())
     print("CHILD INDEX:", child_index.value())
