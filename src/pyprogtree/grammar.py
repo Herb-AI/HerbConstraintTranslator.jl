@@ -1,5 +1,5 @@
 class Grammar:
-    def __init__(self, rules):
+    def __init__(self, rules, constraints):
         self.TYPES = []
         self.CHILD_TYPES = []
         self.TYPE_NAMES = []
@@ -8,8 +8,19 @@ class Grammar:
         self.MAX_ARITY = 0
         self.NUMBER_OF_RULES = 0
         self.EMPTY_RULE = -1
+
+        # Constraints
+        self.COMES_AFTER = []
+        self.FORBIDDEN_PATH = []
+        self.ORDERED_PATH = []
+        self.LOCAL_ORDERED = []
+        self.LOCAL_FORBIDDEN = []
+        self.ORDERED = []
+        self.FORBIDDEN = []
+
         # Set variables:
         self.grammar_from_rules(rules)
+        self.add_constraints(constraints)
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
@@ -47,3 +58,15 @@ class Grammar:
         self.add_rules(rules)
         self.update_implicit_vars()
         self.flatten_child_types()
+
+    def add_constraints(self, constraints):
+        for const in constraints:
+            match const[0]:
+                case "CA": self.COMES_AFTER.append(const[1])
+                case "FP": self.FORBIDDEN_PATH.append(const[1])
+                case "OP": self.ORDERED_PATH.append(const[1])
+                case "LO": self.LOCAL_ORDERED.append(const[1])
+                case "LF": self.LOCAL_FORBIDDEN.append(const[1])
+                case "O": self.ORDERED.append(const[1])
+                case "F": self.FORBIDDEN.append(const[1])
+                case _: raise Exception("Could not find the intended constraint!")
