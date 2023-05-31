@@ -31,17 +31,22 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
 
     # All decision variables are indexed by node
     print("Setting up decision variables... ", end='')
-    rule          = intvar(0,  g.NUMBER_OF_RULES - 1,       shape=max_n,                    name="Rules")
-    parent        = intvar(-1, max_n-1,                     shape=max_n-1,                  name="Parent")
-    depth         = intvar(0,  max_depth,                   shape=max_n,                    name="Distance")
-    arity         = intvar(0,  g.MAX_ARITY,                 shape=max_n,                    name="Arity")
-    child_index   = intvar(0,  g.MAX_ARITY-1,               shape=max_n,                    name="ChildIndex")
-    init_index    = intvar(0,  max_n-min_n,                 shape=1,                        name="InitialIndex")
-    ancestor_path = intvar(0,  g.MAX_ARITY,                 shape=(max_n, max_depth),       name="AncestorPath")
-    ancestor_rule = intvar(-1, g.NUMBER_OF_RULES - 1,       shape=(max_n-1, max_depth),     name="AncestorRule")
-    spaceship     = intvar(-1, 1,                           shape=(max_n-1, max_n-1),       name="<=>")
+    rule          = intvar(0,  g.NUMBER_OF_RULES - 1,       shape=max_n,                        name="Rules")
+    parent        = intvar(-1, max_n-1,                     shape=max_n-1,                      name="Parent")
+    depth         = intvar(0,  max_depth,                   shape=max_n,                        name="Distance")
+    arity         = intvar(0,  g.MAX_ARITY,                 shape=max_n,                        name="Arity")
+    child_index   = intvar(0,  g.MAX_ARITY-1,               shape=max_n,                        name="ChildIndex")
+    init_index    = intvar(0,  max_n-min_n,                 shape=1,                            name="InitialIndex")
+    ancestor_path = intvar(0,  g.MAX_ARITY,                 shape=(max_n, max_depth),           name="AncestorPath")
+    ancestor_rule = intvar(-1, g.NUMBER_OF_RULES - 1,       shape=(max_n-1, max_depth),         name="AncestorRule")
+    spaceship     = intvar(-1, 1,                           shape=(max_n-1, max_n-1, max_n-1),  name="<=>")
     print("DONE")
 
+    # def get_spaceship(n, m):
+    #     if n == m:
+    #         return 0
+    #     n, m = max(n, m), min(n, m)
+    #     return spaceship[n, m, treesize[m]]
 
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
@@ -76,17 +81,21 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         # Child index of empty nodes and the initial node is 0
         [(n <= init_index).implies(child_index[n] == 0) for n in range(0, max_n-1)],
 
-        # Set the spaceship operator
+        # Set the spaceship operator for the leaf nodes
         [[
-            (rule[n] < rule[m]).implies(spaceship[n, m] == -1) &
-            (rule[n] > rule[m]).implies(spaceship[n, m] == 1) &
-            (rule[n] == rule[m]).implies(
-                IfThenElse(arity[n] == 0,
-                    spaceship[n, m] == 0,                               # Left leaf node
-                    spaceship[n, m] == spaceship[n - 1, m - 1]          # Inherit from right child
-                )
+            (rule[n] < rule[m]).implies(spaceship[n, m, 0] == -1) &
+            (rule[n] > rule[m]).implies(spaceship[n, m, 0] == 1) &
+            (rule[n] == rule[m]).implies(spaceship[n, m, 0] == 0)
+        for m in range(n)] for n in range(max_n - 1)],
+
+        # Set the spaceship operator for the internal nodes, breaking ties up until k nodes back
+        [[[
+            IfThenElse(
+                spaceship[n, m, 0] == 0,
+                spaceship[n, m, k] == spaceship[n - 1, m - 1, k - 1],
+                spaceship[n, m, k] == spaceship[n, m, 0]
             )
-        for m in range(n)] for n in range(max_n-1)],
+        for k in range(1, m)] for m in range(n)] for n in range(max_n - 1)],
 
         # Enforce the children of each node are of the correct type: TYPES[rule[n]] == CHILD_TYPES[rule[parent[n]], child_index[n]]
         [
@@ -150,9 +159,10 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     print("DEPTH:", depth.value())
     print("PARENT:", parent.value())
     print("CHILD INDEX:", child_index.value())
+
     for n in range(max_n-1):
         for m in range(n):
-            if spaceship[n, m].value() == 0:
+            if spaceship[n, m, 0].value() == 0:
                 print(f"{n} == {m}")
 
     return is_optimal
