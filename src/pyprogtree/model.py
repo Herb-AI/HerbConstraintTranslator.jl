@@ -31,19 +31,19 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
 
     # All decision variables are indexed by node
     print("Setting up decision variables... ", end='')
-    rule          = intvar(0,  g.NUMBER_OF_RULES - 1,       shape=max_n,                        name="Rules")
-    parent        = intvar(-1, max_n-1,                     shape=max_n-1,                      name="Parent")
-    depth         = intvar(0,  max_depth,                   shape=max_n,                        name="Distance")
-    arity         = intvar(0,  g.MAX_ARITY,                 shape=max_n,                        name="Arity")
-    child_index   = intvar(0,  g.MAX_ARITY-1,               shape=max_n,                        name="ChildIndex")
-    init_index    = intvar(0,  max_n-min_n,                 shape=1,                            name="InitialIndex")
-    ancestor_path = intvar(0,  g.MAX_ARITY,                 shape=(max_n, max_depth),           name="AncestorPath")
-    ancestor_rule = intvar(-1, g.NUMBER_OF_RULES - 1,       shape=(max_n-1, max_depth),         name="AncestorRule")
-    treesize      = intvar(1, max_n,                        shape=max_n,                        name="TreeSize")
-    spaceship     = intvar(-1, 1,                           shape=(max_n-1, max_n-1, max_n-1),  name="<=>")
+    rule                = intvar(0,  g.NUMBER_OF_RULES - 1, shape=max_n,                        name="Rules")
+    parent              = intvar(-1, max_n-1,               shape=max_n-1,                      name="Parent")
+    depth               = intvar(0,  max_depth,             shape=max_n,                        name="Distance")
+    arity               = intvar(0,  g.MAX_ARITY,           shape=max_n,                        name="Arity")
+    child_index         = intvar(0,  g.MAX_ARITY-1,         shape=max_n,                        name="ChildIndex")
+    init_index          = intvar(0,  max_n-min_n,           shape=1,                            name="InitialIndex")
+    ancestor_path       = intvar(0,  g.MAX_ARITY,           shape=(max_n, max_depth),           name="AncestorPath")
+    ancestor_rule       = intvar(-1, g.NUMBER_OF_RULES - 1, shape=(max_n-1, max_depth),         name="AncestorRule")
+    treesize            = intvar(1, max_n,                  shape=max_n,                        name="TreeSize")
+    spaceship_helper    = intvar(-1, 1,                     shape=(max_n-1, max_n-1, max_n-1),  name="<=>")
     print("DONE")
 
-    def get_spaceship(n, m):
+    def spaceship(n, m):
         """
         Compares the ordering of the subtrees of n and m
         :param n: node n
@@ -55,7 +55,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         if n == m:
             return 0
         n, m = max(n, m), min(n, m)
-        return spaceship[n, m, treesize[m]-1]
+        return spaceship_helper[n, m, treesize[m]-1]
 
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
@@ -99,17 +99,17 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
 
         # Set the spaceship operator for the leaf nodes
         [[
-            (rule[n] < rule[m]).implies(spaceship[n, m, 0] == -1) &
-            (rule[n] > rule[m]).implies(spaceship[n, m, 0] == 1) &
-            (rule[n] == rule[m]).implies(spaceship[n, m, 0] == 0)
+            (rule[n] < rule[m]).implies(spaceship_helper[n, m, 0] == -1) &
+            (rule[n] > rule[m]).implies(spaceship_helper[n, m, 0] == 1) &
+            (rule[n] == rule[m]).implies(spaceship_helper[n, m, 0] == 0)
         for m in range(n)] for n in range(max_n - 1)],
 
         # Set the spaceship operator for the internal nodes, breaking ties up until k nodes back
         [[[
             IfThenElse(
-                spaceship[n, m, 0] == 0,
-                spaceship[n, m, k] == spaceship[n - 1, m - 1, k - 1],
-                spaceship[n, m, k] == spaceship[n, m, 0]
+                spaceship_helper[n, m, 0] == 0,
+                spaceship_helper[n, m, k] == spaceship_helper[n - 1, m - 1, k - 1],
+                spaceship_helper[n, m, k] == spaceship_helper[n, m, 0]
             )
         for k in range(1, m+1)] for m in range(n)] for n in range(max_n - 1)],
 
@@ -155,7 +155,11 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         ],
 
         # Enfoce a lexicographic ordering (NOTE: might suffer from integer overflow issue as the sums quickly get very large)
-        [sum(ancestor_path[n] * base) <= sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
+        [sum(ancestor_path[n] * base) <= sum(ancestor_path[n+1] * base) for n in range(max_n-1)],
+
+        # experiment with solve(g, 11, 11, max_depth=4)
+        # spaceship(4, 9) == 0,
+        # treesize[4] >= 5,
     )
     print("DONE")
 
