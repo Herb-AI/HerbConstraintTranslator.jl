@@ -39,14 +39,23 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     init_index    = intvar(0,  max_n-min_n,                 shape=1,                            name="InitialIndex")
     ancestor_path = intvar(0,  g.MAX_ARITY,                 shape=(max_n, max_depth),           name="AncestorPath")
     ancestor_rule = intvar(-1, g.NUMBER_OF_RULES - 1,       shape=(max_n-1, max_depth),         name="AncestorRule")
+    treesize      = intvar(1, max_n,                        shape=max_n,                        name="TreeSize")
     spaceship     = intvar(-1, 1,                           shape=(max_n-1, max_n-1, max_n-1),  name="<=>")
     print("DONE")
 
-    # def get_spaceship(n, m):
-    #     if n == m:
-    #         return 0
-    #     n, m = max(n, m), min(n, m)
-    #     return spaceship[n, m, treesize[m]]
+    def get_spaceship(n, m):
+        """
+        Compares the ordering of the subtrees of n and m
+        :param n: node n
+        :param m: node m
+        :return: -1 if subtree(n) < subtree(m)
+                 0 if subtree(n) == subtree(m)
+                 1 if subtree(n) <=> subtree(m)
+        """
+        if n == m:
+            return 0
+        n, m = max(n, m), min(n, m)
+        return spaceship[n, m, treesize[m]-1]
 
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
@@ -81,6 +90,13 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         # Child index of empty nodes and the initial node is 0
         [(n <= init_index).implies(child_index[n] == 0) for n in range(0, max_n-1)],
 
+        # Calculate the treesize for each node
+        [treesize[n] == 1 + sum([((parent[child] == n) & (child >= init_index)) * treesize[child]
+                                 for child in range(max_n - 1)]) for n in range(max_n)],
+
+        # Implicit constraint that fixes the treesize of the root, to potentially improve performance
+        treesize[max_n - 1] == max_n - init_index,
+
         # Set the spaceship operator for the leaf nodes
         [[
             (rule[n] < rule[m]).implies(spaceship[n, m, 0] == -1) &
@@ -95,7 +111,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                 spaceship[n, m, k] == spaceship[n - 1, m - 1, k - 1],
                 spaceship[n, m, k] == spaceship[n, m, 0]
             )
-        for k in range(1, m)] for m in range(n)] for n in range(max_n - 1)],
+        for k in range(1, m+1)] for m in range(n)] for n in range(max_n - 1)],
 
         # Enforce the children of each node are of the correct type: TYPES[rule[n]] == CHILD_TYPES[rule[parent[n]], child_index[n]]
         [
@@ -146,6 +162,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     # Solving
     print("Solving the model... ", end='')
     is_optimal = model.solve()
+    print("DONE")
+    print(model.status())
     if is_optimal:
         plot_tree(g, parent, rule,
                   show_types=False,
@@ -153,16 +171,10 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                   show_node_index=True,
                   show_empty_nodes=True,
                   show_lambda_string=lambda n: f"{''}")
-    print("DONE")
-    print(model.status())
-    print(ancestor_rule.value())
-    print("DEPTH:", depth.value())
-    print("PARENT:", parent.value())
-    print("CHILD INDEX:", child_index.value())
 
-    for n in range(max_n-1):
-        for m in range(n):
-            if spaceship[n, m, 0].value() == 0:
-                print(f"{n} == {m}")
+        print(ancestor_rule.value())
+        print("DEPTH:", depth.value())
+        print("PARENT:", parent.value())
+        print("CHILD INDEX:", child_index.value())
 
     return is_optimal
