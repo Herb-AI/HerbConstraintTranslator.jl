@@ -1,5 +1,11 @@
-from cpmpy import IfThenElse
+#todo
 
+from src.pyprogtree.decision_variables import DecisionVariables
+
+# class LocalForbidden:
+#     def __init__(self, dv: DecisionVariables):
+#         self.dv = dv
+#
 #
 # def LocalForbidden():
 #     def __init__(child_index=None, ancestors_path=None):

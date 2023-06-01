@@ -27,18 +27,6 @@ class DecisionVariables:
         self.spaceship_helper    = intvar(-1, 1,                     shape=(max_n-1, max_n-1, max_n-1),  name="<=>")
         print("DONE")
 
-        self.all_decision_variables = [self.rule,
-            self.parent          ,
-            self.depth           ,
-            self.arity           ,
-            self.child_index     ,
-            self.init_index      ,
-            self.ancestor_path   ,
-            self.ancestor_rule   ,
-            self.treesize        ,
-            self.spaceship_helper
-        ]
-
     def spaceship(self, n, m):
         """
         Compares the ordering of the subtrees of n and m
