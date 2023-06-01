@@ -39,6 +39,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     ancestor_path = intvar(0,  g.MAX_ARITY,           shape=(max_n, max_depth),   name="AncestorPath")
     ancestor_rule = intvar(-1, g.NUMBER_OF_RULES - 1, shape=(max_n-1, max_depth), name="AncestorRule")
 
+    topdown_ordered = intvar(0, max_depth, shape=g.TDO_IDXS[-1]*max_n-1, name="TopDownOrdered")
+
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
     model = Model(
@@ -63,13 +65,11 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [(n < init_index).implies(parent[n] == init_index) for n in range(max_n-1)],
 
         # Enforcing the arity according to the number of children per rule
-        [(n > number_of_empty_nodes).implies(arity[n] == Element(g.RULE_ARITY, rule[n])) for n in range(1, max_n)],
-
-        # Enforcing the number of empty nodes
-        [(n < number_of_empty_nodes).implies(rule[n] == g.EMPTY_RULE) for n in range(max_n)],
-
-        # Enforce the inner nodes of the trail of empty nodes have arity 1
-        [(n <= number_of_empty_nodes).implies(arity[n] == 1) for n in range(1, max_n)],
+        # Note that '>=' is used instead of the expected '=='
+        # This is such that empty rule nodes can freely be added as children
+        # This makes it such that we can also find tree with less than max_n nodes
+        # We might want to find another way of reducing the number of nodes in the future
+        [arity[n] == Element(g.RULE_ARITY, rule[n]) for n in range(max_n)],
 
         # Indexing children of the same parent
         [(n > init_index).implies(child_index[n] == Count(parent[:n], parent[n])) for n in range(1, max_n-1)],
@@ -122,6 +122,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [sum(ancestor_path[n] * base) <= sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
     )
 
+    
     # Solving
     is_optimal = model.solve()
     if is_optimal:

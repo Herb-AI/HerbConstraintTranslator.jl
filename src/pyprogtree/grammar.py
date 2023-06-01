@@ -10,8 +10,8 @@ class Grammar:
         self.EMPTY_RULE = -1
 
         # Constraints
-        self.COMES_AFTER = []
-        self.COMES_AFTER_IDXS = [0]
+        self.TOP_DOWN_ORDERED = []
+        self.TDO_IDXS = [0]
 
         self.FORBIDDEN_PATH = []
         self.ORDERED_PATH = []
@@ -66,14 +66,10 @@ class Grammar:
             match const[0]:
                 # ComesAfter constraint, add new path to COMES_AFTER array, 
                 # and add new ending index in COMES_AFTER_IDXS
-                case "CA": 
-                    self.COMES_AFTER.append(const[1])
-                    self.COMES_AFTER_IDXS.append(self.COMES_AFTER_IDXS[-1] + len(const(1)))
+                case "Top-down ordered": 
+                    self.TOP_DOWN_ORDERED.append(const[1])
+                    self.TDO_IDXS.append(self.TDO_IDXS[-1] + len(const(1)))
 
                 case "FP": self.FORBIDDEN_PATH.append(const[1])
                 case "OP": self.ORDERED_PATH.append(const[1])
-                case "LO": self.LOCAL_ORDERED.append(const[1])
-                case "LF": self.LOCAL_FORBIDDEN.append(const[1])
-                case "O": self.ORDERED.append(const[1])
-                case "F": self.FORBIDDEN.append(const[1])
                 case _: raise Exception("Could not find the intended constraint!")
