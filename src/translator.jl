@@ -2,7 +2,7 @@ using PyCall
 
 # Import the python utilities:
 py"""
-from pyprogtree import runner
+from src.pyprogtree import runner
 """
 
 # Define a list of production rules alongside IO types (temporary):
@@ -17,6 +17,6 @@ prod_rules = [
     [">=", "Bool", ["Real", "Real"]],
     ["T", "Bool", []],
     ["F", "Bool", []]
-    ]
+]
     
 py"runner.run"(prod_rules)
