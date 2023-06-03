@@ -12,13 +12,8 @@ class Grammar:
         # Constraints
         self.TOP_DOWN_ORDERED = []
         self.TDO_IDXS = [0]
-
         self.FORBIDDEN_PATH = []
         self.ORDERED_PATH = []
-        self.LOCAL_ORDERED = []
-        self.LOCAL_FORBIDDEN = []
-        self.ORDERED = []
-        self.FORBIDDEN = []
 
         # Set variables:
         self.grammar_from_rules(rules)
@@ -68,7 +63,7 @@ class Grammar:
                 # and add new ending index in COMES_AFTER_IDXS
                 case "Top-down ordered": 
                     self.TOP_DOWN_ORDERED.append(const[1])
-                    self.TDO_IDXS.append(self.TDO_IDXS[-1] + len(const(1)))
+                    self.TDO_IDXS.append(self.TDO_IDXS[-1] + len(const[1]))
 
                 case "FP": self.FORBIDDEN_PATH.append(const[1])
                 case "OP": self.ORDERED_PATH.append(const[1])

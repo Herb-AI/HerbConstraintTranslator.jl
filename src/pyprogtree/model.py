@@ -39,7 +39,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     ancestor_path = intvar(0,  g.MAX_ARITY,           shape=(max_n, max_depth),   name="AncestorPath")
     ancestor_rule = intvar(-1, g.NUMBER_OF_RULES - 1, shape=(max_n-1, max_depth), name="AncestorRule")
 
-    topdown_ordered = intvar(0, max_depth, shape=g.TDO_IDXS[-1]*max_n-1, name="TopDownOrdered")
+    topdown_ordered = intvar(0, max_depth+1, shape=g.TDO_IDXS[-1]*max_n-1, name="TopDownOrdered")
 
     base = np.array([(g.MAX_ARITY + 1) ** i for i in range(max_depth)][::-1])
 
@@ -122,7 +122,24 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         [sum(ancestor_path[n] * base) <= sum(ancestor_path[n+1] * base) for n in range(max_n-1)]
     )
 
-    
+    # Assign topdown_ordered vars according to ancestor_rule
+    for i, tdo in enumerate(g.TOP_DOWN_ORDERED):
+        for j, rule_path in enumerate(ancestor_rule):
+            # Uses arithmetic to store the index of the value in rule_path that is the same as in the constraint, if a value is not the same max_depth + 1 is stored instead.
+            model += [(min( [min(max_depth+1, abs(Element(rule_path, i) - tdo[k])*(max_depth+1) + i) for i in range(len(rule_path))] ) == topdown_ordered[k + g.TDO_IDXS[i+1]]) for k in range(len(tdo))]
+
+    # Enforce every top down ordered constraint
+    for i, tdo in enumerate(g.TOP_DOWN_ORDERED):
+        for j, rule_path in enumerate(ancestor_rule):
+            # The last in the order should not occur if the path wasn't long enough to have the entire order
+            for r in range(0, len(tdo)):
+                model += rule_path[r] != tdo[-1]
+
+            # For the remaining path, it either doesn't occur either, or the topdown ordering needs to be satisfied
+            if r < len(rule_path):
+                                               # Indexing: select jth path, then enforces least to most ordering in constraint range.
+                model += Count(rule_path[r:], tdo[-1]) == 0 | ((topdown_ordered[g.TDO_IDXS[-1]*j + k] < topdown_ordered[g.TDO_IDXS[-1]*j + k + 1]) for k in range(g.TDO_IDXS[i], g.TDO_IDXS[i-1] - 1))
+
     # Solving
     is_optimal = model.solve()
     if is_optimal:
