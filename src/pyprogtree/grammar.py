@@ -10,7 +10,7 @@ class Grammar:
         self.EMPTY_RULE = -1
 
         # Constraints
-        self.TOP_DOWN_ORDERED = []
+        self.TOPDOWN_ORDERED = []
         self.TDO_IDXS = [0]
         self.FORBIDDEN_PATH = []
         self.ORDERED_PATH = []
@@ -18,6 +18,9 @@ class Grammar:
         # Set variables:
         self.grammar_from_rules(rules)
         self.add_constraints(constraints)
+        print("TDO: " + str(self.TOPDOWN_ORDERED))
+        print("TDO_IDX: " + str(self.TDO_IDXS))
+        print("RULES: " + str(self.RULE_NAMES))
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
@@ -59,10 +62,8 @@ class Grammar:
     def add_constraints(self, constraints):
         for const in constraints:
             match const[0]:
-                # ComesAfter constraint, add new path to COMES_AFTER array, 
-                # and add new ending index in COMES_AFTER_IDXS
-                case "Top-down ordered": 
-                    self.TOP_DOWN_ORDERED.append(const[1])
+                case "TDO": 
+                    self.TOPDOWN_ORDERED.append(const[1])
                     self.TDO_IDXS.append(self.TDO_IDXS[-1] + len(const[1]))
 
                 case "FP": self.FORBIDDEN_PATH.append(const[1])
