@@ -26,6 +26,7 @@ class DecisionVariables:
         self.treesize            = intvar(1,  max_n,                 shape=max_n,                        name="TreeSize")
         self.spaceship_helper    = intvar(-1, 1,                     shape=(max_n-1, max_n-1, max_n-1),  name="<=>")
         self.topdown_ordered     = intvar(0,  max_depth+1,           shape=(max_n-1, g.TDO_IDXS[-1]),    name="TopDownOrdered")
+        self.leftright_ordered   = intvar(0,  max_n+1,                 shape=g.NUMBER_OF_RULES,            name="LeftRightOrdered")
 
         print("DONE")
 

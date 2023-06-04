@@ -54,7 +54,7 @@ def enforce_topdown_ordered(dv: DecisionVariables):
                     ]) for rule_idx in range(len(rule_path))
                 ] +
                 
-                # Also checks the rule of the current node, since ancestor_rule doesn't contain this.
+                # Also enforces the rule for the current node, since ancestor_rule doesn't contain this.
                 [
                     min([
                         dv.max_depth+1, 

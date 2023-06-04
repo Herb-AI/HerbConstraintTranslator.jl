@@ -12,15 +12,14 @@ class Grammar:
         # Constraints
         self.TOPDOWN_ORDERED = []
         self.TDO_IDXS = [0]
+        self.LEFTRIGHT_ORDERED = []
+        self.LRO_IDXS = [0]
         self.FORBIDDEN_PATH = []
-        self.ORDERED_PATH = []
 
         # Set variables:
         self.grammar_from_rules(rules)
         self.add_constraints(constraints)
-        print("TDO: " + str(self.TOPDOWN_ORDERED))
-        print("TDO_IDX: " + str(self.TDO_IDXS))
-        print("RULES: " + str(self.RULE_NAMES))
+        print("LROS: " + str(self.LEFTRIGHT_ORDERED))
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
@@ -65,7 +64,9 @@ class Grammar:
                 case "TDO": 
                     self.TOPDOWN_ORDERED.append(const[1])
                     self.TDO_IDXS.append(self.TDO_IDXS[-1] + len(const[1]))
+                case "LRO": 
+                    self.LEFTRIGHT_ORDERED.append(const[1])
+                    self.LRO_IDXS.append(self.LRO_IDXS[-1] + len(const[1]))
 
                 case "FP": self.FORBIDDEN_PATH.append(const[1])
-                case "OP": self.ORDERED_PATH.append(const[1])
                 case _: raise Exception("Could not find the intended constraint!")
