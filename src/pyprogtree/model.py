@@ -27,11 +27,19 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         enforce_ancestor_rule(dv),
         enforce_first_ordering(dv),
         enforce_treesize(dv),
-        enforce_spaceship(dv),
-
-        constraint_forbidden(dv, MatchNode(dv, 2)),
+        enforce_spaceship(dv)
     )
     print("DONE")
+
+    node = MatchNode(dv, 6, path=[0, 2], children=[
+        MatchNode(dv, 'x', children=[
+            MatchNode(dv, 1),
+            MatchNode(dv, 0)
+        ]),
+        MatchNode(dv, 'x')
+    ])
+
+    model += [node.enforce(), node.matched()]
 
     # Solving
     print("Solving the model... ", end='')

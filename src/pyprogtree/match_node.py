@@ -48,6 +48,15 @@ class MatchNode:
             child.parent = self.index
             child.child_index = i
 
+        self.matchvars = dict()
+        for child in self.children:
+            self.matchvars.update(child.matchvars)
+        for child in self.children:
+            child.matchvars = self.matchvars
+        if type(self.rule) == str:
+            if not self.rule in self.matchvars:
+                self.matchvars[self.rule] = self
+
         self.enforced = False
 
     def set_location(self, location: MatchNode.Location):
@@ -76,7 +85,6 @@ class MatchNode:
         """
         :return: Constraints that enforces the node to take a valid location, given such a location exists
         """
-        assert type(self.rule) != str, f"Unresolved MatchVar '{self.rule}'"
         assert not self.enforced, "Attempt to enforce a MatchNode twice"
 
         self.enforced = True
@@ -95,10 +103,18 @@ class MatchNode:
         :return: BoolVar indicating if the MatchNode and all its children are correctly matched in the current tree.
         """
         assert self.enforced, "Unable to check existance of unenforced MatchNode, please call '.enforce()' first"
-        exists = (self.dv.rule[self.index] == self.rule) & all(c.matched() for c in self.children)
+        constraints = all(c.matched() for c in self.children)
+        if type(self.rule) == str:
+            # MatchVars must match each other
+            if self.matchvars[self.rule] != self:
+                constraints &= (self.dv.spaceship(self.matchvars[self.rule].index, self.index) == 0)
+        else:
+            # MatchNodes must match their rule
+            constraints &= (self.dv.rule[self.index] == self.rule)
+        # the location must be valid
         if self.location != MatchNode.Location.FREE:
-            exists &= (self.index != -1)
-        return exists
+            constraints &= (self.index != -1)
+        return constraints
 
     def value(self):
         """

@@ -14,17 +14,27 @@ def enforce_spaceship(dv: DecisionVariables):
     return [
         # Set the spaceship operator for the leaf nodes
         [[
-            (dv.rule[n] < dv.rule[m]).implies(dv.spaceship_helper[n, m, 0] == -1) &
-            (dv.rule[n] > dv.rule[m]).implies(dv.spaceship_helper[n, m, 0] == 1) &
-            (dv.rule[n] == dv.rule[m]).implies(dv.spaceship_helper[n, m, 0] == 0)
-            for m in range(n)] for n in range(dv.max_n - 1)],
+            (dv.rule[n] < dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == -1) &
+            (dv.rule[n] > dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 1) &
+            (dv.rule[n] == dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 0)
+        for m in range(n)] for n in range(dv.max_n - 1)],
 
         # Set the spaceship operator for the internal nodes, breaking ties up until k nodes back
         [[[
             IfThenElse(
-                dv.spaceship_helper[n, m, 0] == 0,
-                dv.spaceship_helper[n, m, k] == dv.spaceship_helper[n - 1, m - 1, k - 1],
-                dv.spaceship_helper[n, m, k] == dv.spaceship_helper[n, m, 0]
+                dv.spaceship_helper(n, m, 0) == 0,
+                dv.spaceship_helper(n, m, k) == dv.spaceship_helper(n - 1, m - 1, k - 1),
+                dv.spaceship_helper(n, m, k) == dv.spaceship_helper(n, m, 0)
             )
-            for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
+        for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
+
+        # Make the matrix symmetric
+        [[[
+            dv.spaceship_helper(n, m, k) == dv.spaceship_helper(m, n, k)
+        for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
+
+        # Reflexive: n == n
+        [[
+            dv.spaceship_helper(n, n, k) == 0
+        for k in range(1, n + 1)] for n in range(dv.max_n - 1)],
     ]
