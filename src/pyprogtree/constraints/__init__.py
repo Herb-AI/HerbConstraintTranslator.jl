@@ -8,3 +8,4 @@ from src.pyprogtree.constraints.enforce_spaceship import enforce_spaceship
 from src.pyprogtree.constraints.enforce_treesize import enforce_treesize
 from src.pyprogtree.constraints.enforce_topdown_ordered import enforce_topdown_ordered
 from src.pyprogtree.constraints.enforce_leftright_ordered import enforce_leftright_ordered
+from src.pyprogtree.constraints.enforce_topdown_forbidden import enforce_topdown_forbidden

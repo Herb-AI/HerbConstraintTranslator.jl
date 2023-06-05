@@ -27,6 +27,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         enforce_treesize(dv),
         enforce_spaceship(dv),
         enforce_topdown_ordered(dv),
+        enforce_topdown_forbidden(dv),
         enforce_leftright_ordered(dv),
     )
     print("DONE")

@@ -1,70 +1,67 @@
 from src.pyprogtree.decision_variables import DecisionVariables
 from cpmpy import *
 
-def enforce_topdown_ordered(dv: DecisionVariables):     
-    sat_topdown_size = [
-        # The last rule in the order should not occur if the rule path 
-        # is not long enough to fit the entire rule order
-         [
-              [rule_path[r] != tdo[-1]]
-              for tdo in dv.g.TOPDOWN_ORDERED
-              for rule_path in dv.ancestor_rule 
-              for r in range(0, len(tdo))
-         ]
-    ]
-     
-    sat_topdown = [
-        # From where the rule path is long enough to contain the entire rule order, 
-        # the last rule in the order doesn't occur, or the topdown ordering constraint 
-        # needs to be satisfied. Meaning, the indexes stored for that constraint need 
-        # to be in ascending order.
+def enforce_topdown_ordered(dv: DecisionVariables): 
+    """
+    Restricts topdown_ordered decision variable according to ancestor_rule.
+
+    It retrieves the index by using the equation:
+        outcome = abs(<actual_rule> - <wanted_rule>) * <max_depth+1> + <index_actual_rule>
+    It does this for every position on a path from ancestor_rule, and takes the minimum of all of
+    these and max_depth+1, to get the minimum index of the <wanted_rule> on this path.
+    
+    This is what topdown_ordered[path, <wanted_rule>] is restricted to. 
+
+    max_depth+1 is used as the maximum value, since it is one bigger than the possible value.
+    """
+    # Should the max be max_depth+2? since I saw that terminal nodes are not in ancestor_rule,
+    # and it ranges till max_depth, so terminal nodes could be max_depth+1 I think...
+    restrict_topdown = [
         [
-            (Count(rule_path[len(tdo)-1:], tdo[-1]) == 0) 
-            |   (
-                    (dv.topdown_ordered[j, k] 
-                    < dv.topdown_ordered[j, k+1]) 
-                for k in range(dv.g.TDO_IDXS[i], dv.g.TDO_IDXS[i+1]-1)
-                )
-            for i, tdo in enumerate(dv.g.TOPDOWN_ORDERED) 
-            for j, rule_path in enumerate(dv.ancestor_rule) 
-            if len(tdo) < len(rule_path)
+            min(
+                [
+                    dv.max_depth+1,
+                    abs( dv.rule[n]      -rule_value )*(dv.max_depth+1) + dv.depth[n] # This is added for terminal nodes. Could add | rule_path == -1, if it is a lazy evaluator?
+                ] + 
+                    abs( rule_path[depth]-rule_value )*(dv.max_depth+1) + depth
+                    for depth in range(len(rule_path))
+
+            ) == dv.topdown_ordered[n, rule_value]
+            for n, rule_path in enumerate(dv.ancestor_rule)
+            for rule_value in range(dv.g.NUMBER_OF_RULES)
         ]
     ]
-    
-    if len(sat_topdown) == 0:
-       return sat_topdown_size
-     
-    restrict_topdown = [
-        # Restricts topdown_ordered decision variable according to ancestor_rule.
+   
+    """
+    The index at which a rule occurs, needs to be great enough to fit the entire order coming
+    before.
+    """
+    sat_topdown_size = [
         [
-            # Takes the minimum of all the indexes stored. If the rule wasn´t present in the path
-            # this is max_depth+1, one bigger than any possible index. If it was present it takes
-            # the lowest index where the rule was present.
-            min(
-                # Uses arithmetic to store the index of the value in rule_path that is 
-                # the same as in the constraint, otherwise max_depth+1 is stored instead.
-                # a.k.a. if the rule on the path is the same as the rule in the constraint
-                # the equation leads to 0*(max_depth+1)+idx = idx, else it becomes equal or larger 
-                # than max_depth+1, and due to the min it is then set to max_depth+1 which is
-                # one bigger than the maximum real index.
-                [
-                    min([
-                        dv.max_depth+1, 
-                        abs( Element(rule_path, rule_idx)-tdo[order_idx] )*(dv.max_depth+1) + rule_idx
-                    ]) for rule_idx in range(len(rule_path))
-                ] +
-                
-                # Also enforces the rule for the current node, since ancestor_rule doesn't contain this.
-                [
-                    min([
-                        dv.max_depth+1, 
-                        abs( Element(dv.rule, path_idx)-tdo[order_idx] )*(dv.max_depth+1) + path_idx
-                    ])
-                ]
-            ) == dv.topdown_ordered[path_idx, dv.g.TDO_IDXS[tdo_idx] + order_idx]
-            for tdo_idx, tdo in enumerate(dv.g.TOPDOWN_ORDERED)
-            for path_idx, rule_path in enumerate(dv.ancestor_rule)
-            for order_idx in range(len(tdo))
+            dv.topdown_ordered[n,r] > idx
+            for tdo in enumerate(dv.g.TOPDOWN_ORDERED)
+            for n in range(dv.max_n)
+            for idx, r in enumerate(tdo[1:])
+        ]
+    ]
+
+    """
+    From where the rule path is long enough to contain the entire rule order, the last rule in the 
+    order doesn't occur, or the topdown ordering constraint needs to be satisfied. Meaning, the 
+    indexes corresponding to the rules in the constraint need to be in ascending order.
+    """
+    # Count could be removed if the operator is changed to <=
+    sat_topdown = [
+        [ 
+            (Count(rule_path[len(tdo)-1:], tdo[-1]) == 0)  
+            |   (
+                    (dv.topdown_ordered[j, tdo[k]] 
+                    < dv.topdown_ordered[j, tdo[k+1]]) 
+                    for k in range(tdo-1)
+                )
+            for tdo in dv.g.TOPDOWN_ORDERED 
+            for j, rule_path in enumerate(dv.ancestor_rule) 
+            if len(tdo) < len(rule_path)
         ]
     ]
      
