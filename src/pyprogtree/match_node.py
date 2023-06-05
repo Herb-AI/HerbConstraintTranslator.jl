@@ -103,6 +103,7 @@ class MatchNode:
         :return: BoolVar indicating if the MatchNode and all its children are correctly matched in the current tree.
         """
         assert self.enforced, "Unable to check existance of unenforced MatchNode, please call '.enforce()' first"
+
         constraints = all(c.matched() for c in self.children)
         if type(self.rule) == str:
             # MatchVars must match each other
@@ -111,7 +112,8 @@ class MatchNode:
         else:
             # MatchNodes must match their rule
             constraints &= (self.dv.rule[self.index] == self.rule)
-        # the location must be valid
+
+       # the location must be valid
         if self.location != MatchNode.Location.FREE:
             constraints &= (self.index != -1)
         return constraints

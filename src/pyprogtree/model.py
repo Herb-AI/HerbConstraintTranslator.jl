@@ -31,15 +31,20 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     )
     print("DONE")
 
-    node = MatchNode(dv, 6, path=[0, 2], children=[
-        MatchNode(dv, 'x', children=[
-            MatchNode(dv, 1),
-            MatchNode(dv, 0)
-        ]),
+    node = MatchNode(dv, 6, children=[
+        MatchNode(dv, 'x'),
         MatchNode(dv, 'x')
-    ])
+    ], fixed_index=14)
 
-    model += [node.enforce(), node.matched()]
+    model += (node.enforce()) & (node.matched() == True)
+
+    # todo: bug node.matched() doesn't work for MatchVars
+    # node = MatchNode(dv, 6, children=[
+    #     MatchNode(dv, 'x'),
+    #     MatchNode(dv, 'x')
+    # ], fixed_index=0)
+    #
+    # model += (node.enforce()) & (node.matched() == False)
 
     # Solving
     print("Solving the model... ", end='')
