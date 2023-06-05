@@ -18,9 +18,9 @@ max_depth+1 is used as the maximum value, since it is one bigger than the possib
 def enforce_topdown_rule_index(dv: DecisionVariables): 
     return [
         min([
-                 dv.max_depth+2,
-                 abs( dv.rule[n]           -wanted_rule )*(dv.max_depth+2) + dv.depth[n] # This is added for terminal nodes. Could add | rule_path == -1, if it is a lazy evaluator?
-            ] + [abs( dv.ancestor_rule[n,d]-wanted_rule )*(dv.max_depth+2) + d
+                 dv.max_depth+1,
+                 abs( dv.rule[n]           -wanted_rule )*(dv.max_depth+1) + dv.depth[n] # This is added for terminal nodes. Could add | rule_path == -1, if it is a lazy evaluator?
+            ] + [abs( dv.ancestor_rule[n,d]-wanted_rule )*(dv.max_depth+1) + d
                 for d in range(dv.max_depth)]
 
             ) == dv.topdown_rule_index[n, wanted_rule]

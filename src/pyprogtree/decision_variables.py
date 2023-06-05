@@ -17,7 +17,7 @@ class DecisionVariables:
         print("Setting up decision variables... ", end='')
         self.rule                 = intvar(0,  g.NUMBER_OF_RULES - 1, shape=max_n,                        name="Rules")
         self.parent               = intvar(-1, max_n-1,               shape=max_n-1,                      name="Parent")
-        self.depth                = intvar(0,  max_depth,             shape=max_n,                        name="Distance")
+        self.depth                = intvar(0,  max_depth,             shape=max_n,                        name="Depth")
         self.arity                = intvar(0,  g.MAX_ARITY,           shape=max_n,                        name="Arity")
         self.child_index          = intvar(0,  g.MAX_ARITY-1,         shape=max_n,                        name="ChildIndex")
         self.init_index           = intvar(0,  max_n-min_n,           shape=1,                            name="InitialIndex")
@@ -25,7 +25,7 @@ class DecisionVariables:
         self.ancestor_rule        = intvar(-1, g.NUMBER_OF_RULES - 1, shape=(max_n-1, max_depth),         name="AncestorRule")
         self.treesize             = intvar(1,  max_n,                 shape=max_n,                        name="TreeSize")
         self.spaceship_helper     = intvar(-1, 1,                     shape=(max_n-1, max_n-1, max_n-1),  name="<=>")
-        self.topdown_rule_index   = intvar(0,  max_depth+2,           shape=(max_n-1, g.NUMBER_OF_RULES), name="TopDownOrdered")
+        self.topdown_rule_index   = intvar(0,  max_depth+1,           shape=(max_n-1, g.NUMBER_OF_RULES), name="TopDownOrdered")
         self.leftright_rule_index = intvar(0,  max_n+1,               shape=g.NUMBER_OF_RULES,            name="LeftRightOrdered")
 
         print("DONE")

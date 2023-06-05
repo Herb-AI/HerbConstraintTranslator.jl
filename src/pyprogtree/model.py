@@ -17,6 +17,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     dv = DecisionVariables(g, min_n, max_n, max_depth)
 
     print("Setting up the model... ", end='')
+    print(enforce_topdown_rule_index(dv))
     model = Model(
         enforce_tree(dv),
         enforce_child_index(dv),

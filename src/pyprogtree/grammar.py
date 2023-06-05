@@ -18,8 +18,6 @@ class Grammar:
         self.grammar_from_rules(rules)
         self.add_constraints(constraints)
 
-        print("TDF", self.TOPDOWN_FORBIDDEN)
-
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
         self.RULE_NAMES.append(name)
