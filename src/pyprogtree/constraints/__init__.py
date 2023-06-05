@@ -6,3 +6,4 @@ from src.pyprogtree.constraints.enforce_child_index import enforce_child_index
 from src.pyprogtree.constraints.enforce_empty_nodes import enforce_empty_nodes
 from src.pyprogtree.constraints.enforce_spaceship import enforce_spaceship
 from src.pyprogtree.constraints.enforce_treesize import enforce_treesize
+from src.pyprogtree.constraints.constraint_local_forbidden import constraint_local_forbidden
