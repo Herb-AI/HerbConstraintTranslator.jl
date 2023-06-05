@@ -13,8 +13,6 @@ This is what topdown_rule_index[path, <wanted_rule>] is restricted to.
 
 max_depth+1 is used as the maximum value, since it is one bigger than the possible value.
 """
-# Should the max be max_depth+2? since I saw that terminal nodes are not in ancestor_rule,
-# and it ranges till max_depth, so terminal nodes could be max_depth+1 I think...
 def enforce_topdown_rule_index(dv: DecisionVariables): 
     return [
         min([
