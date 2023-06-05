@@ -1,8 +1,18 @@
-#todo: local forbidden
 from src.pyprogtree.decision_variables import DecisionVariables
+from src.pyprogtree.match_node import MatchNode
 
-def constraint_local_forbidden(dv: DecisionVariables):
-    pass
+def constraint_local_forbidden(dv: DecisionVariables, match_node: MatchNode):
+    assert match_node.location != MatchNode.Location.FREE, \
+        "The 'location' of a MatchNode of a LOCAL forbidden constraint should be LOCAL" + \
+        "Please add 'path' or 'fixed_index' parameters to the 'match_node'"
+    return (match_node.enforce()) & (match_node.matched() == False)
+
+def constraint_forbidden(dv: DecisionVariables, match_node: MatchNode):
+    assert match_node.location == MatchNode.Location.FREE, \
+        "The 'location' of a MatchNode of GLOBAL forbidden constraint should be GLOBAL." + \
+        "Please remove 'path' or 'fixed_index' parameters from the 'match_node'"
+    match_nodes = [match_node.copy(fixed_index=n) for n in range(dv.max_n)]
+    return [constraint_local_forbidden(dv, match_nodes[n]) for n in range(dv.max_n)]
 
 # from __future__ import annotations
 # from cpmpy import IfThenElse, Table, intvar

@@ -18,7 +18,6 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     dv = DecisionVariables(g, min_n, max_n, max_depth)
 
     print("Setting up the model... ", end='')
-    #node = MatchNode(dv, 6, children=[MatchNode(dv, 0), MatchNode(dv, 6)])
 
     model = Model(
         enforce_tree(dv),
@@ -29,8 +28,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         enforce_first_ordering(dv),
         enforce_treesize(dv),
         enforce_spaceship(dv),
-        #node.enforce(),
-        #node.matched()
+
+        constraint_forbidden(dv, MatchNode(dv, 2)),
     )
     print("DONE")
 
@@ -51,7 +50,5 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         print("DEPTH:", dv.depth.value())
         print("PARENT:", dv.parent.value())
         print("CHILD INDEX:", dv.child_index.value())
-
-        #print(node.value())
 
     return is_optimal

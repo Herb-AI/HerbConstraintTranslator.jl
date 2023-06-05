@@ -55,9 +55,6 @@ class MatchNode:
             f"MatchNode location ambiguously defined by {location} and {self.location.name}"
         self.location = location
 
-    def _has_fixed_index(self):
-        return type(self.index) == int
-
     def _location_exists(self):
         if self.location == MatchNode.Location.CHILD:
             return any((self.dv.child_index[n] == self.child_index) & (self.dv.parent[n] == self.parent) for n in range(self.dv.max_n-1))
@@ -110,3 +107,11 @@ class MatchNode:
         if self.location == MatchNode.Location.FIXED_INDEX:
             return self.index
         return self.index.value()
+
+    def copy(self, path=None, fixed_index=None):
+        children = [child.copy() for child in self.children]
+        if path is None and self.location == MatchNode.Location.PATH:
+            path = self.path
+        if fixed_index is None and self.location == MatchNode.Location.FIXED_INDEX:
+            fixed_index = self.index
+        return MatchNode(self.dv, self.rule, children=children, path=path, fixed_index=fixed_index)
