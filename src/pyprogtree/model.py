@@ -26,6 +26,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         enforce_first_ordering(dv),
         enforce_treesize(dv),
         enforce_spaceship(dv),
+        enforce_topdown_rule(dv),
+        enforce_leftright_rule(dv),
         enforce_topdown_ordered(dv),
         enforce_topdown_forbidden(dv),
         enforce_leftright_ordered(dv),
@@ -50,6 +52,5 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         print("PARENT:", dv.parent.value())
         print("CHILD INDEX:", dv.child_index.value())
         print("RULE: ", dv.rule.value())
-        print("leftright: ", dv.leftright_ordered.value())
 
     return is_optimal
