@@ -23,25 +23,22 @@ if __name__ == "__main__":
         ["F", "Bool", []]
     ],
     [
-        # ["TDO", [2,3]],
-        # ["LRO", [2,3]],
-        ["TDF", [2,9]],
-        ["TDF", [2,0]],
-        ["TDF", [3,0]],
-        ["TDF", [4,9]],
-        ["TDF", [5,9]],
-        ["TDF", [6,0]],
-        ["TDF", [7,0]],
-        ["TDF", [8,0]]
+    #    ["LRO", [3,2]]
     ]
     )
 
+# Test TopDown Ordered -> with and without:
+# ["TDO", [2,3]]
 
-    # ComesAfter(rule: Int, predecessors: [Int])
-    # ForbiddenPath(sequence: [Int])
-    # OrderedPath(order: [Int])
+# Test LeftRight Ordered -> with and without:
+# ["LRO", [3,2]]
 
-    # Ordered(tree: AbstractMatchNode, order: [Symbol])
-    # Forbidden(tree: AbstractMatchNode)
-    # LocalOrdered(path: [Int], tree: AbstractMatchNode, order: [Symbol])
-    # LocalForbidden(path: [Int], tree: AbstractMatchNode)
+# Test Forbidden Path where 3 and True should never occur in the tree:
+# ["TDF", [2,9]],
+# ["TDF", [2,0]],
+# ["TDF", [3,0]],
+# ["TDF", [4,9]],
+# ["TDF", [5,9]],
+# ["TDF", [6,0]],
+# ["TDF", [7,0]],
+# ["TDF", [8,0]]

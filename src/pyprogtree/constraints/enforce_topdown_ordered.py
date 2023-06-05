@@ -2,7 +2,7 @@ from src.pyprogtree.decision_variables import DecisionVariables
 from cpmpy import *
 
 """
-Retricts the topdown_rule values in two ways:
+Retricts the topdown_rule_index values in two ways:
     1. The index at which a rule occurs, needs to be great enough to fit the entire order 
         coming before.
     2. From where the rule path is long enough to contain the entire rule order, the last rule
@@ -12,17 +12,17 @@ Retricts the topdown_rule values in two ways:
 def enforce_topdown_ordered(dv: DecisionVariables): 
     return [
         [
-            dv.topdown_rule[n,r] > idx
+            dv.topdown_rule_index[n,r] > idx
             for tdo in enumerate(dv.g.TOPDOWN_ORDERED)
-            for n in range(dv.max_n)
+            for n in range(dv.max_n-1)
             for idx, r in enumerate(tdo[1:])
         ],
         [
             (Count(rule_path[len(tdo)-1:], tdo[-1]) == 0)   # Count could be removed if the operator is changed to <=
             |   (
-                    (dv.topdown_rule[j, tdo[k]] 
-                    < dv.topdown_rule[j, tdo[k+1]]) 
-                    for k in range(tdo-1)
+                    all([(dv.topdown_rule_index[j, tdo[k]] 
+                    < dv.topdown_rule_index[j, tdo[k+1]])
+                    for k in range(len(tdo)-1)])
                 )
             for tdo in dv.g.TOPDOWN_ORDERED 
             for j, rule_path in enumerate(dv.ancestor_rule) 
