@@ -26,7 +26,6 @@ docs/site/
 # environment.
 Manifest.toml
 src/pyprogtree/__pycache__
-src/pyprogtree/constraints
 src/pyprogtree/build
 src/pyprogtree/pyprogtree.egg-info
 src/pyprogtree/constraints.egg-info
