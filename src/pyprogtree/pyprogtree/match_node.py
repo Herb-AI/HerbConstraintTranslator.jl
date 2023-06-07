@@ -1,7 +1,7 @@
 from __future__ import annotations
 from enum import Enum
 from cpmpy import IfThenElse, intvar
-from src.pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.decision_variables import DecisionVariables
 from cpmpy.expressions.python_builtins import any, all
 
 class MatchNode:

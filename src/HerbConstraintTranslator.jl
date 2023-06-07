@@ -1,5 +1,6 @@
 module HerbConstraintTranslator
 
+using PyCall
 using ..HerbConstraints
 using ..HerbGrammar
 

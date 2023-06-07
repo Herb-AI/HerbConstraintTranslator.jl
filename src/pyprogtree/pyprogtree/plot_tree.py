@@ -1,6 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-from src.pyprogtree.grammar import *
+from pyprogtree.grammar import *
 import random
 
 def hierarchy_pos(G, root=None, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5):

@@ -1,5 +1,5 @@
-from src.pyprogtree.decision_variables import DecisionVariables
-from src.pyprogtree.match_node import MatchNode
+from pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.match_node import MatchNode
 
 def constraint_local_forbidden(dv: DecisionVariables, match_node: MatchNode):
     assert match_node.location != MatchNode.Location.FREE, \
