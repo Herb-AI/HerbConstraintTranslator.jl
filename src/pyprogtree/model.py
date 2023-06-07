@@ -40,12 +40,12 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     #
     # model += (node.enforce()) & (node.matched() == False)
 
-    node = MatchNode(dv, 6, children=[
-        MatchNode(dv, 'x'),
-        MatchNode(dv, 'x')
-    ])
-
-    model += constraint_forbidden(dv, node)
+    # node = MatchNode(dv, 6, children=[
+    #     MatchNode(dv, 'x'),
+    #     MatchNode(dv, 'x')
+    # ])
+    #
+    # model += constraint_forbidden(dv, node)
 
     # Solving
     print("Solving the model... ", end='')
