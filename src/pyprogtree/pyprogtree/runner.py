@@ -1,13 +1,13 @@
 from pyprogtree.grammar import *
 from pyprogtree.model import *
 
-def run(rules):
+def run(ruletypes, childtypes, typenames, rulenames):
     # Create a grammar from rules:
-    g = Grammar(rules)
+    g = Grammar(ruletypes, childtypes, typenames, rulenames)
     # Find a solution:
     solve(g, 15, 15, max_depth=4)
     # TODO: decode the resulting program
-
+"""
 if __name__ == "__main__":
     run([
         ["3", "Real", []],
@@ -21,3 +21,4 @@ if __name__ == "__main__":
         ["T", "Bool", []],
         ["F", "Bool", []]
     ])
+"""

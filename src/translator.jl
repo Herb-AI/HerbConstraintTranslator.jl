@@ -6,13 +6,11 @@ from pyprogtree import runner
 
 ListedRule = Vector{Union{String, Vector{String}}}
 
-# Define a list of production rules alongside IO types (temporary):
 function solve(grammar::ContextSensitiveGrammar)
     encoding = translate(grammar)
-    ruletypes, childtypes, typenames, rulenames = encoding
 
     # call with our params
-    #py"runner.run"(prod_rules)
+    py"runner.run"(encoding...)
 end
 
 function translateConstraint(c::Constraint)::ListedRule
