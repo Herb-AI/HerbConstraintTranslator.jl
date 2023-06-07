@@ -2,7 +2,6 @@ import numpy as np
 from cpmpy import Model
 from src.pyprogtree.constraints import *
 from src.pyprogtree.decision_variables import DecisionVariables
-from src.pyprogtree.match_node import MatchNode
 from src.pyprogtree.plot_tree import plot_tree
 
 def solve(g, min_n, max_n, max_depth=float("inf")):
@@ -32,6 +31,8 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         enforce_spaceship(dv)
     )
     print("DONE")
+
+    # model += (dv.spaceship(5, 9) == 0) & (dv.treesize[5] == 3)
 
     # node = MatchNode(dv, 6, children=[
     #     MatchNode(dv, 'x'),
@@ -65,5 +66,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
         print("DEPTH:", dv.depth.value())
         print("PARENT:", dv.parent.value())
         print("CHILD INDEX:", dv.child_index.value())
+
+        print(dv.spaceship_1D.reshape((max_n, max_n)).value())
 
     return is_optimal

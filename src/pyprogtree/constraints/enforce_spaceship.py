@@ -1,4 +1,4 @@
-from cpmpy import IfThenElse
+import numpy as np
 from src.pyprogtree.decision_variables import DecisionVariables
 
 def enforce_spaceship(dv: DecisionVariables):
@@ -7,34 +7,83 @@ def enforce_spaceship(dv: DecisionVariables):
     It assumes nodes are stored in post-order depth-first ordering, since the post-order depth-first ordering of node arities of a valid tree uniquely defines the structure of that tree.
 
     Example:
-        spaceship(5, 10) == 0 implies that the entire subtrees rooted at node 5 and 10 are identical.
+        spaceship[5, 10] == 0 implies that the entire subtrees rooted at node 5 and 10 are identical.
     """
-    # Note that the spaceship_helper is lower triangular and is only constrained for (n, m, k) such that:
-    # max_n > n > m >= k
+    base = np.array([2 ** i for i in range(dv.g.MAX_ARITY)])
+
+    def value(n, m):
+        return sum(base * ([(i < dv.arity[n]) * (i < dv.arity[m]) *                     # guards
+                     dv.spaceship(dv.child(n, i), dv.child(m, i))                       # spaceship of existing children
+                     for i in range(dv.g.MAX_ARITY - 1)]+[dv.rule[n] - dv.rule[m]]))    # compare rules of current node
+
     return [
-        # Set the spaceship operator for the leaf nodes
+        # Reflexive
+        [dv.spaceship(n, n) == 0 for n in range(dv.max_n)],
         [[
-            (dv.rule[n] < dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == -1) &
-            (dv.rule[n] > dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 1) &
-            (dv.rule[n] == dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 0)
-        for m in range(n)] for n in range(dv.max_n - 1)],
+            # Symmetric
+            (dv.spaceship(m, n) == -dv.spaceship(n, m)) &
 
-        # Set the spaceship operator for the internal nodes, breaking ties up until k nodes back
-        [[[
-            IfThenElse(
-                dv.spaceship_helper(n, m, 0) == 0,
-                dv.spaceship_helper(n, m, k) == dv.spaceship_helper(n - 1, m - 1, k - 1),
-                dv.spaceship_helper(n, m, k) == dv.spaceship_helper(n, m, 0)
-            )
-        for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
-
-        # Make the matrix symmetric
-        [[[
-            dv.spaceship_helper(n, m, k) == dv.spaceship_helper(m, n, k)
-        for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
-
-        # Reflexive: n == n
-        [[
-            dv.spaceship_helper(n, n, k) == 0
-        for k in range(1, n + 1)] for n in range(dv.max_n - 1)],
+            (value(n, m) < 0).implies(dv.spaceship(n, m) == -1) &
+            (value(n, m) == 0).implies(dv.spaceship(n, m) == 0) &
+            (value(n, m) > 0).implies(dv.spaceship(n, m) == 1)
+        for m in range(n)] for n in range(dv.max_n)]
     ]
+
+# (DecisionVariables) __init__
+# self.spaceship_1D = intvar(-1, 1, shape=(max_n - 1) ** 3, name="<=>")
+
+# (DecisionVariables) methods
+# def spaceship_helper(self, n, m, k):
+#     return self.spaceship_1D[n * (self.max_n - 1) ** 2 + m * (self.max_n - 1) + k]
+#
+# def spaceship(self, n, m):
+#     """
+#     Compares the ordering of the subtrees of n and m.
+#     :param n: node n
+#     :param m: node m
+#     :return: -1 if subtree(n) < subtree(m)
+#              0 if subtree(n) == subtree(m)
+#              1 if subtree(n) <=> subtree(m)
+#     """
+#     return self.spaceship_helper(n, m, self.treesize[m] - 1)
+
+
+# Old version of the spaceship operator
+#
+# def enforce_spaceship(dv: DecisionVariables):
+#     """
+#     Enforces `spaceship(n, m)` to take values in (-1, 0, 1) representing (<, =, >) for rule[n] and rule[m] and breaks ties by resursively considering its children.
+#     It assumes nodes are stored in post-order depth-first ordering, since the post-order depth-first ordering of node arities of a valid tree uniquely defines the structure of that tree.
+#
+#     Example:
+#         spaceship(5, 10) == 0 implies that the entire subtrees rooted at node 5 and 10 are identical.
+#     """
+#     # Note that the spaceship_helper is lower triangular and is only constrained for (n, m, k) such that:
+#     # max_n > n > m >= k
+#     return [
+#         # Set the spaceship operator for the leaf nodes
+#         [[
+#             (dv.rule[n] < dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == -1) &
+#             (dv.rule[n] > dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 1) &
+#             (dv.rule[n] == dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 0)
+#         for m in range(n)] for n in range(dv.max_n - 1)],
+#
+#         # Set the spaceship operator for the internal nodes, breaking ties up until k nodes back
+#         [[[
+#             IfThenElse(
+#                 dv.spaceship_helper(n, m, 0) == 0,
+#                 dv.spaceship_helper(n, m, k) == dv.spaceship_helper(n - 1, m - 1, k - 1),
+#                 dv.spaceship_helper(n, m, k) == dv.spaceship_helper(n, m, 0)
+#             )
+#         for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
+#
+#         # Make the matrix symmetric
+#         [[[
+#             dv.spaceship_helper(n, m, k) == dv.spaceship_helper(m, n, k)
+#         for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
+#
+#         # Reflexive: n == n
+#         [[
+#             dv.spaceship_helper(n, n, k) == 0
+#         for k in range(1, n + 1)] for n in range(dv.max_n - 1)],
+#     ]
