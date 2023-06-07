@@ -1,3 +1,4 @@
+import numpy as np
 from cpmpy import Model
 from src.pyprogtree.constraints import *
 from src.pyprogtree.decision_variables import DecisionVariables
@@ -32,12 +33,12 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     )
     print("DONE")
 
-    node = MatchNode(dv, 6, children=[
-        MatchNode(dv, 'x'),
-        MatchNode(dv, 'x')
-    ], fixed_index=14)
-
-    model += (node.enforce()) & (node.matched() == True)
+    # node = MatchNode(dv, 6, children=[
+    #     MatchNode(dv, 'x'),
+    #     MatchNode(dv, 'x')
+    # ], fixed_index=14)
+    #
+    # model += (node.enforce()) & (node.matched() == True)
 
     # todo: bug node.matched() doesn't work for MatchVars
     # node = MatchNode(dv, 6, children=[
@@ -60,7 +61,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                   show_empty_nodes=True,
                   show_lambda_string=lambda n: f"{''}")
 
-        print("CHILDREN:\n", np.reshape(dv.children.value(), (-1, g.MAX_ARITY)))
+        print("CHILDREN:\n", np.reshape(dv.children_1D.value(), (-1, g.MAX_ARITY)))
         print("DEPTH:", dv.depth.value())
         print("PARENT:", dv.parent.value())
         print("CHILD INDEX:", dv.child_index.value())
