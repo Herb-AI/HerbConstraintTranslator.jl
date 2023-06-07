@@ -28,7 +28,7 @@ Manifest.toml
 
 src/pyprogtree/__pycache__
 src/pyprogtree/build
-src/pyprogtree/constraints
+#src/pyprogtree/constraints
 src/pyprogtree/pyprogtree/build
 src/pyprogtree/pyprogtree.egg-info
 src/pyprogtree/pyprogtree/constraints.egg-info
