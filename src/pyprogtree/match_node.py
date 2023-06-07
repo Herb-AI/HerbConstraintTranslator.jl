@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from cpmpy import IfThenElse, intvar
+from cpmpy import IfThenElse, intvar, boolvar
 from src.pyprogtree.decision_variables import DecisionVariables
 from cpmpy.expressions.python_builtins import any, all
 
@@ -28,10 +28,12 @@ class MatchNode:
         self.location = MatchNode.Location.FREE
 
         if fixed_index is None:
-            self.index = intvar(-1, dv.max_n - 1)
+            self.index = intvar(0, dv.max_n - 1)
+            self.exists = boolvar()
         else:
             self.set_location(MatchNode.Location.FIXED_INDEX)
             self.index = fixed_index
+            self.exists = True
 
         if path is None:
             self.path = None
@@ -64,6 +66,9 @@ class MatchNode:
             f"MatchNode location ambiguously defined by {location} and {self.location.name}"
         self.location = location
 
+    def enforce_dont_exist(self):
+        return self.exists == False & all(c.enforce_dont_exist() for c in self.children)
+
     def _location_exists(self):
         if self.location == MatchNode.Location.CHILD:
             return any((self.dv.child_index[n] == self.child_index) & (self.dv.parent[n] == self.parent) for n in range(self.dv.max_n-1))
@@ -73,9 +78,9 @@ class MatchNode:
 
     def _enforce_location(self):
         if self.location == MatchNode.Location.CHILD:
-            return (self.dv.child_index[self.index] == self.child_index) & (self.dv.parent[self.index] == self.parent)
+            return self.exists & (self.dv.child_index[self.index] == self.child_index) & (self.dv.parent[self.index] == self.parent)
         elif self.location == MatchNode.Location.PATH:
-            return all(self.dv.ancestor_path[self.index, d] == self.path[d] for d in range(self.dv.max_depth))
+            return self.exists & all(self.dv.ancestor_path[self.index, d] == self.path[d] for d in range(self.dv.max_depth))
         raise Exception(f"Unable to match location type {MatchNode.Location.name}")
 
     def _enforce_children(self):
@@ -88,14 +93,12 @@ class MatchNode:
         assert not self.enforced, "Attempt to enforce a MatchNode twice"
 
         self.enforced = True
-        if self.location == MatchNode.Location.FREE:
-            return (self._enforce_children()) & (self.index >= self.dv.init_index)
-        elif self.location == MatchNode.Location.FIXED_INDEX:
+        if self.location == MatchNode.Location.FIXED_INDEX:
             return self._enforce_children()
         return IfThenElse(
             self._location_exists(),
-            self._enforce_children() & self._enforce_location(),
-            self.index == -1
+            self._enforce_location() & self._enforce_children(),
+            self.enforce_dont_exist()
         )
 
     def matched(self):
@@ -104,7 +107,13 @@ class MatchNode:
         """
         assert self.enforced, "Unable to check existance of unenforced MatchNode, please call '.enforce()' first"
 
+        # Recursively call all children
         constraints = all(c.matched() for c in self.children)
+
+        # The node must exist
+        if self.location != MatchNode.Location.FIXED_INDEX:
+            constraints &= self.exists
+
         if type(self.rule) == str:
             # MatchVars must match each other
             if self.matchvars[self.rule] != self:
@@ -113,9 +122,6 @@ class MatchNode:
             # MatchNodes must match their rule
             constraints &= (self.dv.rule[self.index] == self.rule)
 
-       # the location must be valid
-        if self.location != MatchNode.Location.FREE:
-            constraints &= (self.index != -1)
         return constraints
 
     def value(self):

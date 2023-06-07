@@ -38,15 +38,14 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     #     MatchNode(dv, 'x')
     # ], fixed_index=14)
     #
-    # model += (node.enforce()) & (node.matched() == True)
-
-    # todo: bug node.matched() doesn't work for MatchVars
-    # node = MatchNode(dv, 6, children=[
-    #     MatchNode(dv, 'x'),
-    #     MatchNode(dv, 'x')
-    # ], fixed_index=0)
-    #
     # model += (node.enforce()) & (node.matched() == False)
+
+    node = MatchNode(dv, 6, children=[
+        MatchNode(dv, 'x'),
+        MatchNode(dv, 'x')
+    ])
+
+    model += constraint_forbidden(dv, node)
 
     # Solving
     print("Solving the model... ", end='')
