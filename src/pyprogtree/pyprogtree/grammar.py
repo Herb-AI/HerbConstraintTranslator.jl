@@ -1,19 +1,14 @@
 class Grammar:
     def __init__(self, ruletypes, childtypes, typenames, rulenames):
-        self.TYPES = list(ruletypes)
-        self.CHILD_TYPES = list(childtypes)
-        self.TYPE_NAMES = list(typenames)
-        self.RULE_NAMES = list(rulenames)
-        #self.RULE_ARITY = list(map(len, childtypes))
-        #self.MAX_ARITY = max(self.RULE_ARITY)
-        #self.NUMBER_OF_RULES = len(ruletypes)
-        #self.EMPTY_RULE = -1
+        print("init grammar")
+        self.TYPES = ruletypes
+        self.CHILD_TYPES = childtypes
+        self.TYPE_NAMES = typenames
+        self.RULE_NAMES = rulenames
 
         self.add_rule("", "", [])
         self.update_implicit_vars()
         self.flatten_child_types()
-        # Set variables:
-        #self.grammar_from_rules(rules)
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):

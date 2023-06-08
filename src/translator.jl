@@ -7,10 +7,10 @@ from pyprogtree import runner
 ListedRule = Vector{Union{String, Vector{String}}}
 
 function solve(grammar::ContextSensitiveGrammar)
-    encoding = translate(grammar)
+    ruletypes, childtypes, typenames, rulenames = translate(grammar)
 
     # call with our params
-    py"runner.run"(encoding...)
+    py"runner.run"(ruletypes, childtypes, typenames, rulenames)
 end
 
 function translateConstraint(c::Constraint)::ListedRule
@@ -23,10 +23,6 @@ function translate(grammar::ContextSensitiveGrammar)::Tuple{Vector{Int}, Vector{
     # rename type symbols with their indeces
     ruletypes  = map(t -> typeindex[t], grammar.types) # what if a type is `Nothing`?
     childtypes = map(typs -> map(t -> typeindex[t], typs), grammar.childtypes)
-    # compute this in the constructor of the Grammar class
-    #rulearity  = map(length, grammar.childtypes)
-    #maxarity   = max(rulearity)
-    #numrules   = length(grammar.rules)
     rulenames = Vector()
     for (i, rule) ∈ enumerate(grammar.rules)
         if rule isa Expr
