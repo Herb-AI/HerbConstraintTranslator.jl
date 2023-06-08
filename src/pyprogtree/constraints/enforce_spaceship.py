@@ -28,9 +28,9 @@ def enforce_spaceship(dv: DecisionVariables):
             )
         for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
 
-        # Make the matrix symmetric
+        # Make the matrix skew symmetric
         [[[
-            dv.spaceship_helper(n, m, k) == dv.spaceship_helper(m, n, k)
+            dv.spaceship_helper(n, m, k) == -dv.spaceship_helper(m, n, k)
         for k in range(1, m + 1)] for m in range(n)] for n in range(dv.max_n - 1)],
 
         # Reflexive: n == n
