@@ -31,13 +31,6 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     )
     print("DONE")
 
-    node = MatchNode(dv, 6, children=[
-        MatchNode(dv, 'x'),
-        MatchNode(dv, 'x')
-    ], fixed_index=14)
-
-    model += (node.enforce()) & (node.matched() == True)
-
     # todo: bug node.matched() doesn't work for MatchVars
     # node = MatchNode(dv, 6, children=[
     #     MatchNode(dv, 'x'),
@@ -51,18 +44,15 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     is_optimal = model.solve()
     print("DONE")
     print(model.status())
-    # if is_optimal:
-    #     plot_tree(g, dv.parent, dv.rule,
-    #               show_types=False,
-    #               show_rules=True,
-    #               show_node_index=True,
-    #               show_empty_nodes=True,
-    #               show_lambda_string=lambda n: f"{''}")
-
-    #     print(dv.ancestor_path.value())
-    #     print("DEPTH:", dv.depth.value())
-    #     print("PARENT:", dv.parent.value())
-    #     print("CHILD INDEX:", dv.child_index.value())
-
+    if is_optimal:
+        plot_tree(g, dv.parent, dv.rule,
+                  show_types=False,
+                  show_rules=True,
+                  show_node_index=True,
+                  show_empty_nodes=True,
+                  show_lambda_string=lambda n: f"{''}")
     # Return whether the solution is optimal and decision variables to reconstruct the full program tree:
-    return is_optimal, dv.parent.value(), dv.rule.value()
+        return is_optimal, dv.parent.value(), dv.rule.value()
+    else:
+        return is_optimal, [], []
+
