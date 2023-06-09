@@ -51,17 +51,18 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     is_optimal = model.solve()
     print("DONE")
     print(model.status())
-    if is_optimal:
-        plot_tree(g, dv.parent, dv.rule,
-                  show_types=False,
-                  show_rules=True,
-                  show_node_index=True,
-                  show_empty_nodes=True,
-                  show_lambda_string=lambda n: f"{''}")
+    # if is_optimal:
+    #     plot_tree(g, dv.parent, dv.rule,
+    #               show_types=False,
+    #               show_rules=True,
+    #               show_node_index=True,
+    #               show_empty_nodes=True,
+    #               show_lambda_string=lambda n: f"{''}")
 
-        print(dv.ancestor_path.value())
-        print("DEPTH:", dv.depth.value())
-        print("PARENT:", dv.parent.value())
-        print("CHILD INDEX:", dv.child_index.value())
+    #     print(dv.ancestor_path.value())
+    #     print("DEPTH:", dv.depth.value())
+    #     print("PARENT:", dv.parent.value())
+    #     print("CHILD INDEX:", dv.child_index.value())
 
-    return is_optimal
+    # Return whether the solution is optimal and decision variables to reconstruct the full program tree:
+    return is_optimal, dv.parent.value(), dv.rule.value()

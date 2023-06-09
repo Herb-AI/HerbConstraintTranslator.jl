@@ -8,6 +8,7 @@ def run(ruletypes, childtypes, typenames, rulenames):
     typenames  = list(typenames)
     rulenames  = list(rulenames)
     # Create a grammar from rules:ex
+    print("Child types: ", childtypes)
     g = Grammar(ruletypes, childtypes, typenames, rulenames)
     print("grammar constructed!")
     print("ruletypes: ", g.TYPES)
@@ -15,9 +16,9 @@ def run(ruletypes, childtypes, typenames, rulenames):
     print("typenames: ", g.TYPE_NAMES)
     print("rulenames: ", g.RULE_NAMES)
     # Find a solution:
-    solve(g, 15, 15, max_depth=4)
+    _, parent, rule = solve(g, 15, 15, max_depth=4)
     
-    #TODO: decode the resulting program
+    return parent, rule
 
 if __name__ == "__main__":
     ruletypes  = [0, 0, 0, 0, 1, 1, 0, 1, 1, 1]
