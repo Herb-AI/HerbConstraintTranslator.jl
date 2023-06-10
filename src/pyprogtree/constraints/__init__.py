@@ -7,5 +7,10 @@ from src.pyprogtree.constraints.enforce_children import enforce_children
 from src.pyprogtree.constraints.enforce_empty_nodes import enforce_empty_nodes
 from src.pyprogtree.constraints.enforce_spaceship import enforce_spaceship
 from src.pyprogtree.constraints.enforce_treesize import enforce_treesize
+from src.pyprogtree.constraints.enforce_topdown_rule_index import enforce_topdown_rule_index
+from src.pyprogtree.constraints.enforce_leftright_rule_index import enforce_leftright_rule_index
+from src.pyprogtree.constraints.enforce_topdown_ordered import enforce_topdown_ordered
+from src.pyprogtree.constraints.enforce_leftright_ordered import enforce_leftright_ordered
+from src.pyprogtree.constraints.enforce_topdown_forbidden import enforce_topdown_forbidden
 from src.pyprogtree.constraints.constraint_forbidden import constraint_local_forbidden, constraint_forbidden
 from src.pyprogtree.constraints.constraint_ordered import constraint_local_ordered, constraint_ordered

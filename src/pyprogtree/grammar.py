@@ -1,5 +1,5 @@
 class Grammar:
-    def __init__(self, rules):
+    def __init__(self, rules, constraints):
         self.TYPES = []
         self.CHILD_TYPES = []
         self.TYPE_NAMES = []
@@ -8,8 +8,15 @@ class Grammar:
         self.MAX_ARITY = 0
         self.NUMBER_OF_RULES = 0
         self.EMPTY_RULE = -1
+
+        # Constraints
+        self.TOPDOWN_ORDERED = []
+        self.LEFTRIGHT_ORDERED = []
+        self.TOPDOWN_FORBIDDEN = []
+
         # Set variables:
         self.grammar_from_rules(rules)
+        self.add_constraints(constraints)
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
@@ -47,3 +54,11 @@ class Grammar:
         self.add_rules(rules)
         self.update_implicit_vars()
         self.flatten_child_types()
+
+    def add_constraints(self, constraints):
+        for const in constraints:
+            match const[0]:
+                case "TDO": self.TOPDOWN_ORDERED.append(const[1])
+                case "LRO": self.LEFTRIGHT_ORDERED.append(const[1])
+                case "TDF": self.TOPDOWN_FORBIDDEN.append(const[1])
+                case _: raise Exception("Could not find the intended constraint!")
