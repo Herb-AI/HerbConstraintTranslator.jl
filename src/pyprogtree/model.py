@@ -1,6 +1,8 @@
+import numpy as np
 from cpmpy import Model
 from src.pyprogtree.constraints import *
 from src.pyprogtree.decision_variables import DecisionVariables
+from src.pyprogtree.match_node import MatchNode
 from src.pyprogtree.plot_tree import plot_tree
 
 def solve(g, min_n, max_n, max_depth=float("inf")):
@@ -17,8 +19,10 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
     dv = DecisionVariables(g, min_n, max_n, max_depth)
 
     print("Setting up the model... ", end='')
+
     model = Model(
         enforce_tree(dv),
+        enforce_children(dv),
         enforce_child_index(dv),
         enforce_empty_nodes(dv),
         enforce_ancestor_path(dv),
@@ -47,7 +51,7 @@ def solve(g, min_n, max_n, max_depth=float("inf")):
                   show_empty_nodes=True,
                   show_lambda_string=lambda n: f"{''}")
 
-        print(dv.ancestor_rule.value())
+        print("CHILDREN:\n", np.reshape(dv.children_1D.value(), (-1, g.MAX_ARITY)))
         print("DEPTH:", dv.depth.value())
         print("PARENT:", dv.parent.value())
         print("CHILD INDEX:", dv.child_index.value())
