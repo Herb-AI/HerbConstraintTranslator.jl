@@ -18,10 +18,9 @@ def enforce_topdown_ordered(dv: DecisionVariables):
             for idx, r in enumerate(tdo[1:])
         ],
         [
-            (Count(rule_path[len(tdo)-1:], tdo[-1]) == 0)   # Count could be removed if the operator is changed to <=
-            |   (
+                (
                     all([(dv.topdown_rule_index[j, tdo[k]] 
-                    < dv.topdown_rule_index[j, tdo[k+1]])
+                    <= dv.topdown_rule_index[j, tdo[k+1]])
                     for k in range(len(tdo)-1)])
                 )
             for tdo in dv.g.TOPDOWN_ORDERED 

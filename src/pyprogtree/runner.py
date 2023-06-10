@@ -23,22 +23,15 @@ if __name__ == "__main__":
         ["F", "Bool", []]
     ],
     [
-    #    ["LRO", [3,2]]
+        ["TDO", [2,3]],
+        ["LRO", [3,2]],
+        ["TDF", [2,9]],
+        ["TDF", [2,0]],
+        ["TDF", [3,0]],
+        ["TDF", [4,9]],
+        ["TDF", [5,9]],
+        ["TDF", [6,0]],
+        ["TDF", [7,0]],
+        ["TDF", [8,0]]
     ]
     )
-
-# Test TopDown Ordered -> with and without:
-# ["TDO", [2,3]]
-
-# Test LeftRight Ordered -> with and without:
-# ["LRO", [3,2]]
-
-# Test Forbidden Path where 3 and True should never occur in the tree:
-# ["TDF", [2,9]],
-# ["TDF", [2,0]],
-# ["TDF", [3,0]],
-# ["TDF", [4,9]],
-# ["TDF", [5,9]],
-# ["TDF", [6,0]],
-# ["TDF", [7,0]],
-# ["TDF", [8,0]]
