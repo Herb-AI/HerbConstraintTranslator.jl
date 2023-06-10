@@ -5,7 +5,7 @@ def run(rules, constraints):
     # Create a grammar from rules:
     g = Grammar(rules, constraints)
     # Find a solution:
-    solve(g, 5, 5, max_depth=4)
+    solve(g, 9, 9, max_depth=4)
     # TODO: decode the resulting program
 
 if __name__ == "__main__":
@@ -23,15 +23,15 @@ if __name__ == "__main__":
         ["F", "Bool", []]
     ],
     [
-        ["TDO", [2,3]],
-        ["LRO", [3,2]],
-        ["TDF", [2,9]],
-        ["TDF", [2,0]],
-        ["TDF", [3,0]],
-        ["TDF", [4,9]],
-        ["TDF", [5,9]],
-        ["TDF", [6,0]],
-        ["TDF", [7,0]],
-        ["TDF", [8,0]],
+        # ["TDO", [2, 3]],
+        # ["LRO", [3, 2]],
+        # ["TDF", [2, 9]],
+        # ["TDF", [2, 0]],
+        # ["TDF", [3, 0]],
+        # ["TDF", [4, 9]],
+        # ["TDF", [5, 9]],
+        # ["TDF", [6, 0]],
+        # ["TDF", [7, 0]],
+        # ["TDF", [8, 0]],
     ]
     )

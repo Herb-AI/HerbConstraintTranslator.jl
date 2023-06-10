@@ -12,6 +12,9 @@ def enforce_child_index(dv: DecisionVariables):
         child_index[9] = 2
     """
     return [
+        # Child index of the root is 0
+        (dv.child_index[dv.max_n-1] == 0),
+
         # Indexing children of the same parent
         [(n > dv.init_index).implies(dv.child_index[n] == Count(dv.parent[:n], dv.parent[n]))
         for n in range(1, dv.max_n - 1)],

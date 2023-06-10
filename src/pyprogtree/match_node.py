@@ -67,7 +67,7 @@ class MatchNode:
         self.location = location
 
     def enforce_dont_exist(self):
-        return self.exists == False & all(c.enforce_dont_exist() for c in self.children)
+        return (self.index == 0) & (self.exists == False) & all(c.enforce_dont_exist() for c in self.children)
 
     def _location_exists(self):
         if self.location == MatchNode.Location.CHILD:

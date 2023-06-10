@@ -57,8 +57,11 @@ class Grammar:
 
     def add_constraints(self, constraints):
         for const in constraints:
-            match const[0]:
-                case "TDO": self.TOPDOWN_ORDERED.append(const[1])
-                case "LRO": self.LEFTRIGHT_ORDERED.append(const[1])
-                case "TDF": self.TOPDOWN_FORBIDDEN.append(const[1])
-                case _: raise Exception("Could not find the intended constraint!")
+            if const[0] == "TDO":
+                self.TOPDOWN_ORDERED.append(const[1])
+            elif const[0] == "LRO":
+                self.LEFTRIGHT_ORDERED.append(const[1])
+            elif const[0] == "TDF":
+                self.TOPDOWN_FORBIDDEN.append(const[1])
+            else:
+                raise Exception("Could not find the intended constraint!")

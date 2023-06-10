@@ -3,7 +3,6 @@ from src.pyprogtree.constraints.enforce_tree import enforce_tree
 from src.pyprogtree.constraints.enforce_ancestor_path import enforce_ancestor_path
 from src.pyprogtree.constraints.enforce_ancestor_rule import enforce_ancestor_rule
 from src.pyprogtree.constraints.enforce_child_index import enforce_child_index
-from src.pyprogtree.constraints.enforce_children import enforce_children
 from src.pyprogtree.constraints.enforce_empty_nodes import enforce_empty_nodes
 from src.pyprogtree.constraints.enforce_spaceship import enforce_spaceship
 from src.pyprogtree.constraints.enforce_treesize import enforce_treesize
