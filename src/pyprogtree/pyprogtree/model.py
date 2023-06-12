@@ -40,6 +40,7 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     )
     print("DONE")
 
+    """
     #Examples of forbidden:
     node = MatchNode(dv, 6, children=[
         MatchNode(dv, 'x'),
@@ -71,7 +72,8 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     model += (dv.rule[6] == dv.g.RULE_NAMES.index("F"))
     model += (dv.rule[7] == dv.g.RULE_NAMES.index("&&"))
     model += (dv.rule[8] == dv.g.RULE_NAMES.index("Not"))
-
+    """
+    
     def callback():
         dv.save_solution()
         print(f"\r{len(dv.solutions)}/{solution_limit} Solutions Found", end="")
@@ -95,6 +97,12 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     # print("LEFTRIGHT_RULE: ", dv.leftright_rule_index.value())
 
     #dv.compare_solutions()
-
+    
     print(f"Found {number_of_solutions} solutions")
-    return number_of_solutions
+    
+    # Return and decision variables to reconstruct the full program tree
+    if len(dv.solutions) != 0:
+        #TODO: adapt julia interpretation to accept multiple solutions
+        return dv.solutions[0]['parent'], dv.solutions[0]['rule']
+    else:
+        return [], []
