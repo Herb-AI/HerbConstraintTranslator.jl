@@ -2,10 +2,10 @@ import numpy as np
 from cpmpy import Model, SolverLookup
 from cpmpy.solvers import CPM_ortools
 
-from src.pyprogtree.constraints import *
-from src.pyprogtree.decision_variables import DecisionVariables
-from src.pyprogtree.match_node import MatchNode
-from src.pyprogtree.plot_tree import plot_tree
+from pyprogtree.constraints import *
+from pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.match_node import MatchNode
+from pyprogtree.plot_tree import plot_tree
 
 def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     """

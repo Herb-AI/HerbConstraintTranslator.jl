@@ -2,7 +2,7 @@ import numpy as np
 from cpmpy import intvar
 from cpmpy.expressions.core import Expression
 
-from src.pyprogtree.grammar import Grammar
+from pyprogtree.grammar import Grammar
 
 class DecisionVariables:
     def __init__(self, g: Grammar, min_n: int, max_n: int, max_depth: int):

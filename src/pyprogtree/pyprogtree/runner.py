@@ -1,5 +1,5 @@
-from src.pyprogtree.grammar import *
-from src.pyprogtree.model import *
+from pyprogtree.grammar import *
+from pyprogtree.model import *
 
 def run(rules, constraints):
     # Create a grammar from rules:

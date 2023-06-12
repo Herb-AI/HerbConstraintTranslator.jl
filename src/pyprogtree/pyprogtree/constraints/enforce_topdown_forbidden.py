@@ -1,4 +1,4 @@
-from src.pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.decision_variables import DecisionVariables
 from cpmpy import *
 
 """

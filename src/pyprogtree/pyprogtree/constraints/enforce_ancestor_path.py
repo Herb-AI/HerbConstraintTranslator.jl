@@ -1,4 +1,4 @@
-from src.pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.decision_variables import DecisionVariables
 def enforce_ancestor_path(dv: DecisionVariables):
     """
     Enforces `ancestor_path[n, d]` to store the `child_index[m]` of all parents m of node n

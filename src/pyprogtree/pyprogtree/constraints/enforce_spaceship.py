@@ -1,5 +1,5 @@
 from cpmpy import IfThenElse
-from src.pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.decision_variables import DecisionVariables
 
 def enforce_spaceship(dv: DecisionVariables):
     """

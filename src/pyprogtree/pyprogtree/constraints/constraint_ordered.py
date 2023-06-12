@@ -1,5 +1,5 @@
-from src.pyprogtree.decision_variables import DecisionVariables
-from src.pyprogtree.match_node import MatchNode
+from pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.match_node import MatchNode
 from cpmpy.expressions.python_builtins import all
 
 def constraint_local_ordered(dv: DecisionVariables, match_node: MatchNode, order: list):

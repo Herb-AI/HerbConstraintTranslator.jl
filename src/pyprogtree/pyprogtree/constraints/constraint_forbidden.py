@@ -1,5 +1,5 @@
-from src.pyprogtree.decision_variables import DecisionVariables
-from src.pyprogtree.match_node import MatchNode
+from pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.match_node import MatchNode
 
 def constraint_local_forbidden(dv: DecisionVariables, match_node: MatchNode):
     assert match_node.location != MatchNode.Location.FREE, \
@@ -16,7 +16,7 @@ def constraint_forbidden(dv: DecisionVariables, match_node: MatchNode):
 
 # from __future__ import annotations
 # from cpmpy import IfThenElse, Table, intvar
-# from src.pyprogtree.decision_variables import DecisionVariables
+# from pyprogtree.decision_variables import DecisionVariables
 #
 # def constraint_local_forbidden(dv: DecisionVariables, path=[-1, -1, -1, -1]):
 #     n1 = intvar(-1, dv.max_n-1)

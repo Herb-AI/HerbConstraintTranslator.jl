@@ -1,5 +1,5 @@
 import numpy as np
-from src.pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.decision_variables import DecisionVariables
 
 def enforce_first_ordering(dv: DecisionVariables):
     """
