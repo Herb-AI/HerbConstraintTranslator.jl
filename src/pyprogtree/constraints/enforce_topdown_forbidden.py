@@ -22,8 +22,8 @@ def enforce_topdown_forbidden(dv: DecisionVariables):
 
             for tdf in dv.g.TOPDOWN_FORBIDDEN
             for path in dv.ancestor_rule
-            for start in range(len(tdf))
-        ],
+            for start in range(len(path)-len(tdf))
+        ], 
         [
             any(
                 [
@@ -35,5 +35,4 @@ def enforce_topdown_forbidden(dv: DecisionVariables):
             for tdf in dv.g.TOPDOWN_FORBIDDEN
             for n, path in enumerate(dv.ancestor_rule)
         ]
-        
     ]

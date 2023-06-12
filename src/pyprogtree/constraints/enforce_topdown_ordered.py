@@ -12,16 +12,19 @@ Retricts the topdown_rule_index values in two ways:
 def enforce_topdown_ordered(dv: DecisionVariables): 
     return [
         [
-            dv.topdown_rule_index[n,r] > idx
+            dv.topdown_rule_index[n,tdo[-1]] > len(tdo)-2
             for tdo in enumerate(dv.g.TOPDOWN_ORDERED)
             for n in range(dv.max_n-1)
-            for idx, r in enumerate(tdo[1:])
+            if len(tdo) > 2
         ],
         [
                 (
-                    all([(dv.topdown_rule_index[j, tdo[k]] 
-                    <= dv.topdown_rule_index[j, tdo[k+1]])
-                    for k in range(len(tdo)-1)])
+                    dv.topdown_rule_index[j,tdo[-1]] == dv.max_depth+1 
+                    | all(
+                        [(dv.topdown_rule_index[j, tdo[k]] 
+                        <= dv.topdown_rule_index[j, tdo[k+1]])
+                        for k in range(len(tdo)-1)]
+                    )
                 )
             for tdo in dv.g.TOPDOWN_ORDERED 
             for j, rule_path in enumerate(dv.ancestor_rule) 
