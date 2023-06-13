@@ -5,7 +5,7 @@ def enforce_ancestor_path(dv: DecisionVariables):
     """
     return [
         # Fix ancestor path of the root
-        [dv.ancestor_path[dv.max_n - 1, d] == dv.g.MAX_ARITY for d in range(dv.max_depth)],
+        [dv.ancestor_path[dv.max_n - 1, d] == -1 for d in range(dv.max_depth)],
 
         # Enforce each node's path to be an extension of its parents path
         [
@@ -21,7 +21,7 @@ def enforce_ancestor_path(dv: DecisionVariables):
         # Enforce the remaining path symbols to be max_arity
         [
             (d >= dv.depth[n]).implies(
-                dv.ancestor_path[n, d] == dv.g.MAX_ARITY
+                dv.ancestor_path[n, d] == -1
             )
             for n in range(dv.max_n - 1) for d in range(dv.max_depth)
         ],
