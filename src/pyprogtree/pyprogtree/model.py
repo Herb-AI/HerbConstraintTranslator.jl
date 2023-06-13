@@ -108,6 +108,9 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     
     # Return and decision variables to reconstruct the full program tree
     if len(dv.solutions) != 0:
-        return list(zip(map(lambda s: s['parent'], dv.solutions), map(lambda s: s['rule'], dv.solutions)))
+        return list(
+            zip(map(lambda s: s['parent'][dv.init_index.value():], dv.solutions), 
+                map(lambda s: s['rule'][dv.init_index.value():], dv.solutions))
+        )
     else:
         return []
