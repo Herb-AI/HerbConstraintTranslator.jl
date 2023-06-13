@@ -6,23 +6,33 @@ from pyprogtree import runner
 
 ListedRule = Vector{Union{String, Vector{String}}}
 
-function solve(grammar::ContextSensitiveGrammar)
+function solve(
+    grammar::ContextSensitiveGrammar;
+    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1
+)
     # Encode the grammar:
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
     constraints = map(translateConstraint, grammar.constraints)
 
-    # Solve and obtain decision variables (parent, rule):
-    parent, rule = py"runner.run"(ruletypes, childtypes, typenames, rulenames, constraints)
-    parent = map(p -> convert(Int64, p) + 1, parent) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
-    rule = map(r -> convert(Int64, r) + 1, rule) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
+    # Solve and obtain decision variables: list of (parent, rule) tuples
+    results = py"runner.run"(
+        ruletypes, childtypes, typenames, rulenames, constraints, 
+        min_nodes, max_nodes, max_depth, solution_limit
+    )
+    
+    programs = Expr[]
+    for (parent, rule) ∈ results
+        parent = map(p -> convert(Int64, p) + 1, parent) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
+        rule = map(r -> convert(Int64, r) + 1, rule) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
 
-    # Decode the decision variables into a program tree of MatchNode's:
-    program_tree = decode(parent, rule)
+        # Decode the decision variables into a program tree of MatchNode's:
+        program_tree = decode(parent, rule)
 
-    # Convert the MatchNode program tree into a Julia expression
-    program = matchnode2expr(program_tree, grammar)
+        # Convert the MatchNode program tree into a Julia expression and add to programs
+        push!(programs, matchnode2expr(program_tree, grammar))
+    end
 
-    return program
+    return programs
 end
 
 function translateConstraint(c::Constraint)::ListedRule

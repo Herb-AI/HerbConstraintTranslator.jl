@@ -102,7 +102,6 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     
     # Return and decision variables to reconstruct the full program tree
     if len(dv.solutions) != 0:
-        #TODO: adapt julia interpretation to accept multiple solutions
-        return dv.solutions[0]['parent'], dv.solutions[0]['rule']
+        return list(zip(map(lambda s: s['parent'], dv.solutions), map(lambda s: s['rule'], dv.solutions)))
     else:
-        return [], []
+        return []
