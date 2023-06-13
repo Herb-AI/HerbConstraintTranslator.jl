@@ -36,7 +36,13 @@ function solve(
 end
 
 function translateConstraint(c::Constraint)::ListedRule
-    return [] #TODO
+    if c isa ForbiddenPath
+        return ["TDF", c.sequence]
+    elseif c isa ComesAfter
+        return ["TDO", push!(copy(c.sequence), rule)]
+    elseif c isa OrderedPath
+        return ["LRO", c.order]
+    end
 end
 
 function translate(grammar::ContextSensitiveGrammar)::Tuple{Vector{Int}, Vector{Vector{Int}}, Vector{String}, Vector{String}}
@@ -59,7 +65,7 @@ function translate(grammar::ContextSensitiveGrammar)::Tuple{Vector{Int}, Vector{
             push!(rulenames, string(i))
         end
     end
-    #constraints = map(translateConstraint, grammar.constraints)
+    
     return (ruletypes, childtypes, map(string, typenames), rulenames)
 end
 
