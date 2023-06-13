@@ -19,7 +19,11 @@ if __name__ == "__main__":
     childtypes = [[], [], [1, 0, 0], [0], [1], [1, 1], [0, 0], [0, 0], [], []]
     typenames  = ['Real', 'Bool']
     rulenames  = ['3', '4', '?', 'Sqrt', 'Not', '&&', '+', '>=', 'T', 'F']
-    constraints = []
+    constraints = [
+                ["TDF",[4,4]],
+                ["TDO", [4,8]],
+                ["LRO", [3,0]]
+    ]
     run(ruletypes, childtypes, typenames, rulenames, constraints)
 
 """

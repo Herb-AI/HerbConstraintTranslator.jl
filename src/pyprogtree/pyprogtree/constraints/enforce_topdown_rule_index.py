@@ -23,5 +23,5 @@ def enforce_topdown_rule_index(dv: DecisionVariables):
 
             ) == dv.topdown_rule_index[n, wanted_rule]
         for n in range(dv.max_n-1)
-        for wanted_rule in range(dv.g.NUMBER_OF_RULES)
+        for wanted_rule in range(dv.g.NUMBER_OF_RULES-1)
     ]

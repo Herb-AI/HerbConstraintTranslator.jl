@@ -27,7 +27,7 @@ def enforce_topdown_forbidden(dv: DecisionVariables):
         [
             any(
                 [
-                    path[Element(dv.depth, n)-len(tdf)+1+tdf_idx] != tdf[tdf_idx] 
+                    path[Element(dv.depth, n)-len(tdf)+1 + tdf_idx] != tdf[tdf_idx] 
                     for tdf_idx in range(len(tdf)-1)
                 ]+[ dv.rule[n] != tdf[-1] ]
             )

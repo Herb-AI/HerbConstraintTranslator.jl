@@ -21,5 +21,5 @@ def enforce_leftright_rule_index(dv: DecisionVariables):
                 for n in range(dv.max_n)]
 
             ) == dv.leftright_rule_index[r]
-        for r in range(dv.g.NUMBER_OF_RULES)
+        for r in range(dv.g.NUMBER_OF_RULES-1)
     ]
