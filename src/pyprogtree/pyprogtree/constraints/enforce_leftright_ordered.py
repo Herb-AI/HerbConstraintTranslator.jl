@@ -21,7 +21,7 @@ def enforce_leftright_ordered(dv: DecisionVariables):
         ], 
         [
             (dv.leftright_rule_index[lro[r]] 
-            <= dv.leftright_rule_index[lro[r+1]]) 
+            >= dv.leftright_rule_index[lro[r+1]]) 
 
             for lro in dv.g.LEFTRIGHT_ORDERED
             for r in range(len(lro)-1)
