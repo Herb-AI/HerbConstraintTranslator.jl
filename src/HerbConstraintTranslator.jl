@@ -9,6 +9,6 @@ include("translator.jl")
 
 export
     solve
-    translate
+    translate_constraint
 
 end # module HerbConstraintTranslator

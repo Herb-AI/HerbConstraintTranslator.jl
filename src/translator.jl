@@ -2,9 +2,8 @@
 
 py"""
 from pyprogtree import runner
+from pyprogtree.match_node import MatchNode
 """
-
-ListedRule = Vector{Union{String, Vector{String}}}
 
 function solve(
     grammar::ContextSensitiveGrammar;
@@ -12,7 +11,7 @@ function solve(
 )
     # Encode the grammar:
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
-    constraints = map(translateConstraint, grammar.constraints)
+    constraints = map(translate_constraint, grammar.constraints)
 
     # Solve and obtain decision variables: list of (parent, rule) tuples
     results = py"runner.run"(
@@ -35,13 +34,32 @@ function solve(
     return programs
 end
 
-function translateConstraint(c::Constraint)::ListedRule
+function translate_match_node(node::AbstractMatchNode, path=nothing::Union{Vector{Int}, Nothing})::PyObject
+    if node isa MatchNode
+        children = map(translate_match_node, node.children)
+        py"MatchNode"(node.rule_ind, children, path)
+    elseif node isa MatchVar
+        py"MatchNode"(string(node.var_name))
+    else
+        AssertionError("Unexpected AbstractMatchNode!")
+    end
+end
+
+function translate_constraint(c::Constraint)::Vector{Union{String, Vector{Any}}}
     if c isa ForbiddenPath
-        return ["TDF", c.sequence]
+        ["TDF", c.sequence]
     elseif c isa ComesAfter
-        return ["TDO", push!(copy(c.sequence), rule)]
+        ["TDO", push!(copy(c.sequence), c.rule)]
     elseif c isa OrderedPath
-        return ["LRO", c.order]
+        ["LRO", c.order]
+    elseif c isa Ordered # matchnode and list of strings
+        ["O", [translate_match_node(c.tree), map(string, c.order)]]
+    elseif c isa LocalOrdered
+        ["LO", [translate_match_node(c.tree, c.path), map(string, c.order)]]
+    elseif c isa Forbidden
+        ["F", [translate_match_node(c.tree)]]
+    elseif c isa LocalForbidden
+        ["LF", [translate_match_node(c.tree, c.path)]]
     end
 end
 
