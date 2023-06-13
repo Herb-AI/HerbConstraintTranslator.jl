@@ -1,6 +1,3 @@
-from pyprogtree.decision_variables import DecisionVariables
-from pyprogtree.match_node import MatchNode
-
 class Grammar:
     def __init__(self, ruletypes, childtypes, typenames, rulenames, constraints):
         print("init grammar")
