@@ -1,3 +1,6 @@
+from pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.match_node import MatchNode
+
 class Grammar:
     def __init__(self, ruletypes, childtypes, typenames, rulenames, constraints):
         print("init grammar")
@@ -10,6 +13,8 @@ class Grammar:
         self.TOPDOWN_ORDERED = []
         self.LEFTRIGHT_ORDERED = []
         self.TOPDOWN_FORBIDDEN = []
+        self.SUBTREE_ORDERED = []
+        self.SUBTREE_FORBIDDEN = []
 
         self.add_rule("", "", [])
         self.update_implicit_vars()
@@ -61,5 +66,9 @@ class Grammar:
                 self.LEFTRIGHT_ORDERED.append(const[1])
             elif const[0] == "TDF":
                 self.TOPDOWN_FORBIDDEN.append(const[1])
+            elif const[0] == "O" or const[0] == "LO":
+                self.SUBTREE_ORDERED.append(const[1])
+            elif const[0] == "F" or const[0] == "LF":
+                self.SUBTREE_FORBIDDEN.append(const[1])
             else:
                 raise Exception("Could not find the intended constraint!")
