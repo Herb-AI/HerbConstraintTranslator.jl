@@ -100,7 +100,7 @@ def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node
         edges = list(filter(lambda e: g.TYPE_NAMES[g.TYPES[rule[e[0]].value()]] != "", edges))
 
     G=nx.Graph()
-    G.add_edges_from(edges)
+    G.add_edges_from(edges[::-1])
     pos = hierarchy_pos(G, N-1) #we assume node N-1 is the root
 
     nx.draw(G, pos=pos, with_labels=labels is not None, labels=labels, node_color="white")
