@@ -14,37 +14,43 @@ class MatchNode:
         CHILD = 3,          # Location is defined by a parent MatchNode
         FREE = 4            # Location is not defined, this node can match anywhere
 
-    def __init__(self, dv: DecisionVariables, rule: int | str, children=None, path=None, fixed_index=None):
+    def __init__(self, rule: int | str, children=None, path=None, fixed_index=None):
         """
-        :param dv:              an object storing all global DecisionVariables
         :param rule:            int: 'matchnode': rule index this node should match.
                                 str: 'matchvar' rule index should be equal to match nodes with the same string.
         :param children:        list of MatchNodes representing direct children of this MatchNode in order.
         :param path:            ancestor_path to reach this matchnode
         :param fixed_index:     fixed node index this match node should have
         """
-        self.dv = dv
         self.rule = rule
+        self.children = [] if children is None else children
+        self.path = path
+        self.fixed_index = fixed_index
+
+    def setup(self, dv: DecisionVariables):
+        """
+        :param dv:              an object storing all global DecisionVariables
+        """
+        for child in self.children:
+            child.setup(dv)
+            
+        self.dv = dv
         self.location = MatchNode.Location.FREE
 
-        if fixed_index is None:
+        if self.fixed_index is None:
             self.index = intvar(0, dv.max_n - 1)
             self.exists = boolvar()
         else:
             self.set_location(MatchNode.Location.FIXED_INDEX)
-            self.index = fixed_index
+            self.index = self.fixed_index
             self.exists = True
 
-        if path is None:
-            self.path = None
-        else:
+        if self.path is not None:
             self.set_location(MatchNode.Location.PATH)
-            self.path = path
             self.path += [dv.g.MAX_ARITY]*(dv.max_depth-len(self.path))
         self.parent = None
         self.child_index = None
 
-        self.children = [] if children is None else children
         for i, child in enumerate(self.children):
             child.set_location(MatchNode.Location.CHILD)
             child.parent = self.index
