@@ -1,4 +1,3 @@
-import numpy as np
 from cpmpy import Model, SolverLookup
 from cpmpy.solvers import CPM_ortools
 
@@ -95,7 +94,6 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     number_of_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
     print("")
 
-    # print("DEPTH:", dv.depth.value())
     # print("PARENT:", dv.parent.value())
     # print("CHILD INDEX:", dv.child_index.value())
     # print("RULE: ", dv.rule.value())
@@ -109,8 +107,8 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     # Return and decision variables to reconstruct the full program tree
     if len(dv.solutions) != 0:
         return list(
-            zip(map(lambda s: s['parent'][dv.init_index.value():], dv.solutions), 
-                map(lambda s: s['rule'][dv.init_index.value():], dv.solutions))
+            zip(map(lambda s: s['parent'][s['init_index']:] - s['init_index'], dv.solutions), 
+                map(lambda s: s['rule'][s['init_index']:], dv.solutions))
         )
     else:
         return []
