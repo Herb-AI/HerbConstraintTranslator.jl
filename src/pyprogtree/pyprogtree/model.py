@@ -20,11 +20,12 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     max_depth = min(max_n, max_depth)
     dv = DecisionVariables(g, min_n, max_n, max_depth)
 
-    for nodes in g.SUBTREE_ORDERED:
-        nodes.setup(dv)
+    for rule in g.SUBTREE_ORDERED:
+        rule[0].setup(dv)
+        order = rule[1] # TODO: handle order
     
-    for nodes in g.SUBTREE_FORBIDDEN:
-        nodes.setup(dv)
+    for rule in g.SUBTREE_FORBIDDEN:
+        rule[0].setup(dv)
 
     print("Setting up the model... ", end='')
 
