@@ -5,6 +5,8 @@ from pyprogtree import runner
 from pyprogtree.match_node import MatchNode
 """
 
+GrammarEncoding = Tuple{Vector{Int}, Vector{Vector{Int}}, Vector{String}, Vector{String}}
+
 function solve(
     grammar::ContextSensitiveGrammar;
     min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1
@@ -34,7 +36,7 @@ function solve(
     return programs
 end
 
-function translate_match_node(node::AbstractMatchNode, path=nothing::Union{Vector{Int}, Nothing})::PyObject
+function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, Nothing}=nothing)::PyObject
     if node isa MatchNode
         children = map(translate_match_node, node.children)
         py"MatchNode"(node.rule_ind, children, path)
@@ -45,25 +47,25 @@ function translate_match_node(node::AbstractMatchNode, path=nothing::Union{Vecto
     end
 end
 
-function translate_constraint(c::Constraint)::Vector{Union{String, Vector{Any}}}
+function translate_constraint(c::Constraint)::Tuple{String, Vector{Any}}
     if c isa ForbiddenPath
-        ["TDF", c.sequence]
+        ("TDF", c.sequence)
     elseif c isa ComesAfter
-        ["TDO", push!(copy(c.sequence), c.rule)]
+        ("TDO", push!(copy(c.sequence), c.rule))
     elseif c isa OrderedPath
-        ["LRO", c.order]
+        ("LRO", c.order)
     elseif c isa Ordered # matchnode and list of strings
-        ["O", [translate_match_node(c.tree), map(string, c.order)]]
+        ("O", [translate_match_node(c.tree), map(string, c.order)])
     elseif c isa LocalOrdered
-        ["LO", [translate_match_node(c.tree, c.path), map(string, c.order)]]
+        ("LO", [translate_match_node(c.tree, c.path), map(string, c.order)])
     elseif c isa Forbidden
-        ["F", [translate_match_node(c.tree)]]
+        ("F", [translate_match_node(c.tree)])
     elseif c isa LocalForbidden
-        ["LF", [translate_match_node(c.tree, c.path)]]
+        ("LF", [translate_match_node(c.tree, c.path)])
     end
 end
 
-function translate(grammar::ContextSensitiveGrammar)::Tuple{Vector{Int}, Vector{Vector{Int}}, Vector{String}, Vector{String}}
+function translate(grammar::ContextSensitiveGrammar)::GrammarEncoding
     typenames  = collect(keys(grammar.bytype))
     typeindex  = Dict(zip(typenames, 0:length(typenames)-1))
     # rename type symbols with their indeces
