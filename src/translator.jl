@@ -39,7 +39,7 @@ end
 function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, Nothing}=nothing)::PyObject
     if node isa MatchNode
         children = map(translate_match_node, node.children)
-        py"MatchNode"(node.rule_ind, children, path)
+        py"MatchNode"(node.rule_ind - 1, children, path)
     elseif node isa MatchVar
         py"MatchNode"(string(node.var_name))
     else
@@ -47,7 +47,7 @@ function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, 
     end
 end
 
-function translate_constraint(c::Constraint)::Tuple{String, Vector{Any}}
+function translate_constraint(c::Constraint)::Tuple{String, Any}
     if c isa ForbiddenPath
         ("TDF", c.sequence)
     elseif c isa ComesAfter
@@ -59,9 +59,9 @@ function translate_constraint(c::Constraint)::Tuple{String, Vector{Any}}
     elseif c isa LocalOrdered
         ("LO", [translate_match_node(c.tree, c.path), map(string, c.order)])
     elseif c isa Forbidden
-        ("F", [translate_match_node(c.tree)])
+        ("F", translate_match_node(c.tree))
     elseif c isa LocalForbidden
-        ("LF", [translate_match_node(c.tree, c.path)])
+        ("LF", translate_match_node(c.tree, c.path))
     end
 end
 
@@ -69,7 +69,7 @@ function translate(grammar::ContextSensitiveGrammar)::GrammarEncoding
     typenames  = collect(keys(grammar.bytype))
     typeindex  = Dict(zip(typenames, 0:length(typenames)-1))
     # rename type symbols with their indeces
-    ruletypes  = map(t -> typeindex[t], grammar.types) # what if a type is `Nothing`?
+    ruletypes  = map(t -> typeindex[t], grammar.types)
     childtypes = map(typs -> map(t -> typeindex[t], typs), grammar.childtypes)
     rulenames = Vector()
     for (i, rule) ∈ enumerate(grammar.rules)
@@ -82,7 +82,7 @@ function translate(grammar::ContextSensitiveGrammar)::GrammarEncoding
         elseif rule isa Symbol || rule isa Int
             push!(rulenames, string(rule))
         else
-            push!(rulenames, string(i))
+            push!(rulenames, string("rule#", i))
         end
     end
     
