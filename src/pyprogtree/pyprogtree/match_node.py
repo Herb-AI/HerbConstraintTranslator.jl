@@ -47,7 +47,7 @@ class MatchNode:
 
         if self.path is not None:
             self.set_location(MatchNode.Location.PATH)
-            self.path += [dv.g.MAX_ARITY]*(dv.max_depth-len(self.path))
+            self.path += [-1]*(dv.max_depth-len(self.path))
         self.parent = None
         self.child_index = None
 
