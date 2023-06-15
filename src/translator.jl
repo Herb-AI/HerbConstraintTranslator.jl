@@ -21,7 +21,7 @@ function solve(
         min_nodes, max_nodes, max_depth, solution_limit, plot_solutions
     )
     
-    programs = Expr[]
+    programs = Any[]
     for (parent, rule) ∈ results
         parent = map(p -> convert(Int64, p) + 1, parent) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
         rule = map(r -> convert(Int64, r) + 1, rule) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
