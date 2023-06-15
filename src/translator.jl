@@ -39,7 +39,7 @@ end
 function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, Nothing}=nothing)::PyObject
     if node isa MatchNode
         children = map(translate_match_node, node.children)
-        py"MatchNode"(node.rule_ind, children, path)
+        py"MatchNode"(node.rule_ind - 1, children, path)
     elseif node isa MatchVar
         py"MatchNode"(string(node.var_name))
     else
@@ -47,7 +47,7 @@ function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, 
     end
 end
 
-function translate_constraint(c::Constraint)::Tuple{String, Vector{Any}}
+function translate_constraint(c::Constraint)::Tuple{String, Any}
     if c isa ForbiddenPath
         ("TDF", c.sequence)
     elseif c isa ComesAfter
@@ -59,9 +59,9 @@ function translate_constraint(c::Constraint)::Tuple{String, Vector{Any}}
     elseif c isa LocalOrdered
         ("LO", [translate_match_node(c.tree, c.path), map(string, c.order)])
     elseif c isa Forbidden
-        ("F", [translate_match_node(c.tree)])
+        ("F", translate_match_node(c.tree))
     elseif c isa LocalForbidden
-        ("LF", [translate_match_node(c.tree, c.path)])
+        ("LF", translate_match_node(c.tree, c.path))
     end
 end
 
