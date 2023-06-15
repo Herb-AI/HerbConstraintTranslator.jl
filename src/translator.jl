@@ -69,7 +69,7 @@ function translate(grammar::ContextSensitiveGrammar)::GrammarEncoding
     typenames  = collect(keys(grammar.bytype))
     typeindex  = Dict(zip(typenames, 0:length(typenames)-1))
     # rename type symbols with their indeces
-    ruletypes  = map(t -> typeindex[t], grammar.types) # what if a type is `Nothing`?
+    ruletypes  = map(t -> typeindex[t], grammar.types)
     childtypes = map(typs -> map(t -> typeindex[t], typs), grammar.childtypes)
     rulenames = Vector()
     for (i, rule) ∈ enumerate(grammar.rules)
@@ -82,7 +82,7 @@ function translate(grammar::ContextSensitiveGrammar)::GrammarEncoding
         elseif rule isa Symbol || rule isa Int
             push!(rulenames, string(rule))
         else
-            push!(rulenames, string(i))
+            push!(rulenames, string("rule#", i))
         end
     end
     
