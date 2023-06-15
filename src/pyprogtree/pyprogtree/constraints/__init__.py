@@ -13,3 +13,4 @@ from pyprogtree.constraints.enforce_leftright_ordered import enforce_leftright_o
 from pyprogtree.constraints.enforce_topdown_forbidden import enforce_topdown_forbidden
 from pyprogtree.constraints.enforce_subtree_forbidden import enforce_subtree_forbidden
 from pyprogtree.constraints.enforce_subtree_ordered import enforce_subtree_ordered
+from pyprogtree.constraints.enforce_implied_constraints import enforce_implied_constraints

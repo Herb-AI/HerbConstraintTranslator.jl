@@ -36,7 +36,8 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
         enforce_topdown_forbidden(dv),
         enforce_leftright_ordered(dv),
         enforce_subtree_forbidden(dv),
-        enforce_subtree_ordered(dv)
+        enforce_subtree_ordered(dv),
+        enforce_implied_constraints(dv)
     )
     print("DONE")
 

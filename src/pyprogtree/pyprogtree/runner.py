@@ -1,9 +1,11 @@
 from pyprogtree.grammar import *
 from pyprogtree.match_node import MatchNode
 from pyprogtree.model import *
+from pyprogtree.timeit import *
 
+@timeit
 def run(ruletypes, childtypes, typenames, rulenames, constraints, 
-        min_nodes=10, max_nodes=10, max_depth=4, solution_limit=1):
+        min_nodes=10, max_nodes=10, max_depth=4, solution_limit=10):
     # Convert input ndarrays to python lists
     ruletypes  = list(ruletypes)
     childtypes = list(map(list, childtypes))
