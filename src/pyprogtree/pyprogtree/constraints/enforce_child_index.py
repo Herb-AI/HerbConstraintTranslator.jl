@@ -22,5 +22,5 @@ def enforce_child_index(dv: DecisionVariables):
         for n in range(dv.max_n - 2)],
 
         # Child index of empty nodes
-        [(n < dv.init_index).implies(dv.child_index[n] == 0) for n in range(0, dv.max_n - 1)]
+        [(n < dv.init_index).implies(dv.child_index[n] == 0) for n in range(dv.max_n - 1)]
     ]

@@ -6,7 +6,7 @@ from pyprogtree.decision_variables import DecisionVariables
 from pyprogtree.match_node import MatchNode
 from pyprogtree.plot_tree import plot_tree
 
-def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
+def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solutions=True):
     """
     Finds a feasible AST using global variables from 'csg_data.py', then plots it.
     :param g: grammar encoding
@@ -61,13 +61,14 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     
     def callback():
         dv.save_solution()
-        print(f"\r{len(dv.solutions)}/{solution_limit} Solutions Found", end="")
-        plot_tree(g, dv.parent, dv.rule,
-                  show_types=False,
-                  show_rules=True,
-                  show_node_index=True,
-                  show_empty_nodes=True,
-                  show_lambda_string=lambda n: f"{''}")
+        if plot_solutions:
+            print(f"\r{len(dv.solutions)}/{solution_limit} Solutions Found", end="")
+            plot_tree(g, dv.parent, dv.rule,
+                    show_types=False,
+                    show_rules=True,
+                    show_node_index=True,
+                    show_empty_nodes=True,
+                    show_lambda_string=lambda n: f"{''}")
 
     print(f"Solving the model... ")
     solver: CPM_ortools = SolverLookup.get(None, model)

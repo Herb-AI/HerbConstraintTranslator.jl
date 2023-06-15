@@ -9,7 +9,7 @@ GrammarEncoding = Tuple{Vector{Int}, Vector{Vector{Int}}, Vector{String}, Vector
 
 function solve(
     grammar::ContextSensitiveGrammar;
-    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1
+    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1, plot_solutions::Bool=True
 )
     # Encode the grammar:
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
@@ -18,10 +18,10 @@ function solve(
     # Solve and obtain decision variables: list of (parent, rule) tuples
     results = py"runner.run"(
         ruletypes, childtypes, typenames, rulenames, constraints, 
-        min_nodes, max_nodes, max_depth, solution_limit
+        min_nodes, max_nodes, max_depth, solution_limit, plot_solutions
     )
     
-    programs = Expr[]
+    programs = Any[]
     for (parent, rule) ∈ results
         parent = map(p -> convert(Int64, p) + 1, parent) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
         rule = map(r -> convert(Int64, r) + 1, rule) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
