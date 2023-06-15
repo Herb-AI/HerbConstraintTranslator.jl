@@ -52,7 +52,7 @@ function translate_constraint(c::Constraint)::Tuple{String, Any}
         ("TDF", c.sequence)
     elseif c isa ComesAfter
         ("TDO", push!(copy(c.sequence), c.rule))
-    elseif c isa OrderedPath
+    elseif c isa RequireOnLeft
         ("LRO", c.order)
     elseif c isa Ordered # matchnode and list of strings
         ("O", [translate_match_node(c.tree), map(string, c.order)])
