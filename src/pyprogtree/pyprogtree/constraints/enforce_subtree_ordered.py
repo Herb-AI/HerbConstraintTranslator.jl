@@ -2,6 +2,18 @@ from pyprogtree.decision_variables import DecisionVariables
 from pyprogtree.match_node import MatchNode
 from cpmpy.expressions.python_builtins import all
 
+def enforce_subtree_ordered(dv: DecisionVariables):
+    constraints = []
+    for pair in dv.g.SUBTREE_ORDERED:
+        #expects pair[0] to hold a MatchNode
+        #expects pair[1] to hold an order
+        pair[0].setup(dv)
+        if pair[0].location == MatchNode.Location.FREE:
+            constraints.append(constraint_ordered(dv, pair[0], pair[1]))
+        else:
+            constraints.append(constraint_local_ordered(dv, pair[0], pair[1]))
+    return constraints
+
 def constraint_local_ordered(dv: DecisionVariables, match_node: MatchNode, order: list):
     """
     MatchVars in the 'match_node' should be ascending in the given 'order'

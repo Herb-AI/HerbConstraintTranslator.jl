@@ -1,4 +1,5 @@
 from pyprogtree.grammar import *
+from pyprogtree.match_node import MatchNode
 from pyprogtree.model import *
 
 def run(ruletypes, childtypes, typenames, rulenames, constraints, 
@@ -21,8 +22,10 @@ if __name__ == "__main__":
     rulenames  = ['3', '4', '?', 'Sqrt', 'Not', '&&', '+', '>=', 'T', 'F']
     constraints = [
                 ["TDF",[4,4]],
-                ["TDO", [4,8]],
-                ["LRO", [3,0]]
+                #["TDO", [4,8]],
+                ["LRO", [3,0]],
+                ["O", [MatchNode(6, children=[MatchNode("x"), MatchNode("y")]), ["x", "y"]]],
+                ["F", MatchNode(7, children=[MatchNode("x"), MatchNode("x")])]
     ]
     run(ruletypes, childtypes, typenames, rulenames, constraints)
 

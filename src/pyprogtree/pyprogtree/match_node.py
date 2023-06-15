@@ -144,4 +144,6 @@ class MatchNode:
             path = self.path
         if fixed_index is None and self.location == MatchNode.Location.FIXED_INDEX:
             fixed_index = self.index
-        return MatchNode(self.dv, self.rule, children=children, path=path, fixed_index=fixed_index)
+        node = MatchNode(self.rule, children=children, path=path, fixed_index=fixed_index)
+        node.setup(self.dv)
+        return node

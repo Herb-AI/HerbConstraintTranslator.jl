@@ -1,6 +1,16 @@
 from pyprogtree.decision_variables import DecisionVariables
 from pyprogtree.match_node import MatchNode
 
+def enforce_subtree_forbidden(dv: DecisionVariables):
+    constraints = []
+    for node in dv.g.SUBTREE_FORBIDDEN:
+        node.setup(dv)
+        if node.location == MatchNode.Location.FREE:
+            constraints.append(constraint_forbidden(dv, node))
+        else:
+            constraints.append(constraint_local_forbidden(dv, node))
+    return constraints
+
 def constraint_local_forbidden(dv: DecisionVariables, match_node: MatchNode):
     assert match_node.location != MatchNode.Location.FREE, \
         "The 'location' of a MatchNode of a LOCAL forbidden constraint should be LOCAL. " + \

@@ -3,7 +3,6 @@ from cpmpy.solvers import CPM_ortools
 
 from pyprogtree.constraints import *
 from pyprogtree.decision_variables import DecisionVariables
-from pyprogtree.match_node import MatchNode
 from pyprogtree.plot_tree import plot_tree
 
 def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
@@ -20,13 +19,6 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     max_depth = min(max_n, max_depth)
     dv = DecisionVariables(g, min_n, max_n, max_depth)
 
-    for rule in g.SUBTREE_ORDERED:
-        rule[0].setup(dv)
-        order = rule[1] # TODO: handle order
-    
-    for rule in g.SUBTREE_FORBIDDEN:
-        rule[0].setup(dv)
-
     print("Setting up the model... ", end='')
 
     model = Model(
@@ -42,7 +34,9 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
         enforce_leftright_rule_index(dv),
         enforce_topdown_ordered(dv),
         enforce_topdown_forbidden(dv),
-        enforce_leftright_ordered(dv)
+        enforce_leftright_ordered(dv),
+        enforce_subtree_forbidden(dv),
+        enforce_subtree_ordered(dv)
     )
     print("DONE")
 
