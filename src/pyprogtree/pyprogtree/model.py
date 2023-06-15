@@ -3,6 +3,7 @@ from cpmpy.solvers import CPM_ortools
 
 from pyprogtree.constraints import *
 from pyprogtree.decision_variables import DecisionVariables
+from pyprogtree.match_node import MatchNode
 from pyprogtree.plot_tree import plot_tree
 
 def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
@@ -41,39 +42,22 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     )
     print("DONE")
 
-    """
-    #Examples of forbidden:
-    node = MatchNode(dv, 6, children=[
-        MatchNode(dv, 'x'),
-        MatchNode(dv, 'x')
-    ])
-    model += constraint_forbidden(dv, node)
-
-    node = MatchNode(dv, 2, children=[
-        MatchNode(dv, 'x'),
-        MatchNode(dv, 'y'),
-        MatchNode(dv, 'z')
-    ])
-    model += constraint_forbidden(dv, node)
-
-    # Example of ordered:
-    node = MatchNode(dv, 8, children=[
-        MatchNode(dv, 'x'),
-        MatchNode(dv, 'y')
-    ])
-    model += constraint_ordered(dv, node, ['x', 'y'])
-
-    # Fixed tree structure:
-    model += (dv.rule[0] == dv.g.RULE_NAMES.index("4"))
-    model += (dv.rule[1] == dv.g.RULE_NAMES.index("3"))
-    model += (dv.rule[2] == dv.g.RULE_NAMES.index("/"))
-    model += (dv.rule[3] == dv.g.RULE_NAMES.index("4"))
-    model += (dv.rule[4] == dv.g.RULE_NAMES.index("Sqrt"))
-    model += (dv.rule[5] == dv.g.RULE_NAMES.index(">="))
-    model += (dv.rule[6] == dv.g.RULE_NAMES.index("F"))
-    model += (dv.rule[7] == dv.g.RULE_NAMES.index("&&"))
-    model += (dv.rule[8] == dv.g.RULE_NAMES.index("Not"))
-    """
+    # # Fixed tree structure:
+    # model += (dv.rule[9] == dv.g.RULE_NAMES.index("?"))
+    # model += (dv.rule[8] == dv.g.RULE_NAMES.index("Not"))
+    # model += (dv.rule[7] == dv.g.RULE_NAMES.index("F"))
+    # model += (dv.rule[6] == dv.g.RULE_NAMES.index("3"))
+    # model += (dv.rule[5] == dv.g.RULE_NAMES.index("Sqrt"))
+    # model += (dv.rule[4] == dv.g.RULE_NAMES.index("Sqrt"))
+    # model += (dv.rule[3] == dv.g.RULE_NAMES.index("?"))
+    # model += (dv.rule[2] == dv.g.RULE_NAMES.index("T"))
+    # model += (dv.rule[1] == dv.g.RULE_NAMES.index("4"))
+    # model += (dv.rule[0] == dv.g.RULE_NAMES.index("4"))
+    #
+    # Manual forbidden
+    # node = MatchNode(2, children=[MatchNode(8), MatchNode(1), MatchNode(1)], fixed_index=3)
+    # node.setup(dv)
+    # model += constraint_local_forbidden(dv,node)
     
     def callback():
         dv.save_solution()
@@ -97,6 +81,13 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100):
     # print("LEFTRIGHT_RULE: ", dv.leftright_rule_index.value())
 
     #dv.compare_solutions()
+
+    # print(node.children[2]._location_exists().value())
+    # print(node.children[2].child_index)
+    # print(node.children[2].parent)
+    # print("-----")
+    # print(dv.child_index[0].value())
+    # print(dv.parent[0].value())
     
     print(f"Found {number_of_solutions} solutions")
     
