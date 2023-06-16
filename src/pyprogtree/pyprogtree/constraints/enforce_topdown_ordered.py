@@ -19,7 +19,7 @@ def enforce_topdown_ordered(dv: DecisionVariables):
         ],
         [
                 (
-                    dv.topdown_rule_index[j,tdo[-1]] == dv.max_depth+1 
+                    (dv.topdown_rule_index[j,tdo[-1]] == dv.max_depth+1) 
                     | all(
                         [(dv.topdown_rule_index[j, tdo[k]] 
                         <= dv.topdown_rule_index[j, tdo[k+1]])
