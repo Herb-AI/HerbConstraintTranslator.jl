@@ -51,7 +51,7 @@ function translate_constraint(c::Constraint)::Tuple{String, Any}
     if c isa ForbiddenPath
         ("TDF", c.sequence)
     elseif c isa ComesAfter
-        ("TDO", push!(copy(c.sequence), c.rule))
+        ("TDO", push!(copy(c.predecessors), c.rule))
     elseif c isa RequireOnLeft
         ("LRO", c.order)
     elseif c isa Ordered # matchnode and list of strings
