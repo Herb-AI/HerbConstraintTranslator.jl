@@ -9,7 +9,7 @@ GrammarEncoding = Tuple{Vector{Int}, Vector{Vector{Int}}, Vector{String}, Vector
 
 function solve(
     grammar::ContextSensitiveGrammar;
-    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1, plot_solutions::Bool=True
+    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1, plot_solutions::Bool=true
 )
     # Encode the grammar:
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
