@@ -47,14 +47,14 @@ function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, 
     end
 end
 
-function translate_constraint(c::Constraint)::Tuple{String, Any}
+function translate_constraint(c::Constraint)::Tuple{String, Any}    
     if c isa ForbiddenPath
-        ("TDF", c.sequence)
+        ("TDF", deepcopy(c.sequence))
     elseif c isa ComesAfter
-        ("TDO", push!(copy(c.predecessors), c.rule))
+        ("TDO", push!(deepcopy(c.predecessors), c.rule))
     elseif c isa RequireOnLeft
-        ("LRO", c.order)
-    elseif c isa Ordered # matchnode and list of strings
+        ("LRO", deepcopy(c.order))
+    elseif c isa Ordered
         ("O", [translate_match_node(c.tree), map(string, c.order)])
     elseif c isa LocalOrdered
         ("LO", [translate_match_node(c.tree, c.path), map(string, c.order)])
