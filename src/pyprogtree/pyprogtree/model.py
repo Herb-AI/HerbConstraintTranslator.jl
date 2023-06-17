@@ -3,7 +3,6 @@ from cpmpy.solvers import CPM_ortools
 
 from pyprogtree.constraints import *
 from pyprogtree.decision_variables import DecisionVariables
-from pyprogtree.match_node import MatchNode
 from pyprogtree.plot_tree import plot_tree
 
 def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solutions=True):
@@ -38,7 +37,7 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
         enforce_leftright_ordered(dv),
         enforce_subtree_forbidden(dv),
         enforce_subtree_ordered(dv),
-        enforce_implied_constraints(dv)
+        #enforce_implied_constraints(dv)
     )
     print("DONE")
 
@@ -91,6 +90,8 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
     # print(dv.parent[0].value())
     
     print(f"Found {number_of_solutions} solutions")
+
+    #print(dv.compare_solutions())
     
     # Return and decision variables to reconstruct the full program tree
     return list(

@@ -5,7 +5,7 @@ from pyprogtree.timeit import *
 
 @timeit
 def run(ruletypes, childtypes, typenames, rulenames, constraints, 
-        min_nodes=10, max_nodes=10, max_depth=4, solution_limit=10, plot_solutions=True):
+        min_nodes=1, max_nodes=5, max_depth=4, solution_limit=1000, plot_solutions=False):
     # Convert input ndarrays to python lists
     ruletypes  = list(ruletypes)
     childtypes = list(map(list, childtypes))
@@ -23,10 +23,10 @@ if __name__ == "__main__":
     typenames  = ['Real', 'Bool']
     rulenames  = ['3', '4', '?', 'Sqrt', 'Not', '&&', '+', '>=', 'T', 'F']
     constraints = [
-                ["TDF",[4,4]],
+                #["TDF",[4,4]],
                 #["TDO", [4,8]],
-                ["LRO", [3,0]],
-                ["O", [MatchNode(6, children=[MatchNode("x"), MatchNode("y")]), ["x", "y"]]],
+                #["LRO", [3,0]],
+                #["O", [MatchNode(6, children=[MatchNode("x"), MatchNode("y")]), ["x", "y"]]],
                 ["F", MatchNode(7, children=[MatchNode("x"), MatchNode("x")])]
     ]
     run(ruletypes, childtypes, typenames, rulenames, constraints)

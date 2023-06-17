@@ -63,8 +63,11 @@ class DecisionVariables:
         self.solutions.append(new_solution)
 
     def compare_solutions(self):
+        duplicate_solutions = set()
         for i in range(len(self.solutions)):
             sol1 = self.solutions[i]
+            if i in duplicate_solutions:
+                continue
             for j in range(i):
                 sol2 = self.solutions[j]
                 assert sol1.keys() == sol2.keys(), "Solutions have a different number of keys"
@@ -72,9 +75,12 @@ class DecisionVariables:
                 for name in sol1.keys():
                     if np.any(sol1[name] != sol2[name]):
                         differences.append(name)
-                print("----------------------------------")
-                print(f"differences of solution ({i}, {j}): {differences}:")
-                for name in differences:
-                    print(name, sol1[name])
-                    print(name, sol2[name])
-                print("----------------------------------")
+                # print("----------------------------------")
+                # print(f"differences of solution ({i}, {j}): {differences}:")
+                # for name in differences:
+                #     print(name, sol1[name])
+                #     print(name, sol2[name])
+                # print("----------------------------------")
+                if len(differences) == 0:
+                    duplicate_solutions.add(j)
+        return len(duplicate_solutions)
