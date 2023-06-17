@@ -7,10 +7,14 @@ from pyprogtree.match_node import MatchNode
 
 GrammarEncoding = Tuple{Vector{Int}, Vector{Vector{Int}}, Vector{String}, Vector{String}}
 
+rule_count = 0
+
 function solve(
     grammar::ContextSensitiveGrammar;
     min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1, plot_solutions::Bool=true
 )
+    global rule_count = length(grammar.rules)
+
     # Encode the grammar:
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
     constraints = map(translate_constraint, grammar.constraints)
@@ -38,16 +42,20 @@ end
 
 function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, Nothing}=nothing)::PyObject
     if node isa MatchNode
-        children = map(translate_match_node, node.children)
-        py"MatchNode"(node.rule_ind - 1, children, path)
+        if 0 < node.rule_ind ≤ rule_count
+            children = map(translate_match_node, node.children)
+            py"MatchNode"(node.rule_ind - 1, children, path)
+        else
+            throw(BoundsError("Rule index of the match node is out of bounds: $(node)"))
+        end
     elseif node isa MatchVar
         py"MatchNode"(string(node.var_name))
     else
-        AssertionError("Unexpected AbstractMatchNode!")
+        throw(ErrorException("Didn't expect $(typeof(node))!"))
     end
 end
 
-function translate_constraint(c::Constraint)::Tuple{String, Any}    
+function translate_constraint(c::Constraint)::Tuple{String, Any}
     if c isa ForbiddenPath
         ("TDF", deepcopy(c.sequence))
     elseif c isa ComesAfter
@@ -62,6 +70,8 @@ function translate_constraint(c::Constraint)::Tuple{String, Any}
         ("F", translate_match_node(c.tree))
     elseif c isa LocalForbidden
         ("LF", translate_match_node(c.tree, c.path))
+    else
+        throw(ErrorException("$(typeof(c)) is unsupported!"))
     end
 end
 
