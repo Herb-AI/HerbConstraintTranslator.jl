@@ -24,7 +24,7 @@ class MatchNode:
         """
         self.rule = rule
         self.children = [] if children is None else children
-        self.path = path
+        self.path = None if path is None else list(path)
         self.fixed_index = fixed_index
 
     def setup(self, dv: DecisionVariables):
