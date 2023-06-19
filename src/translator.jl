@@ -40,14 +40,13 @@ function solve(
     return programs
 end
 
+guarded_reindex(i::Int)::Int = 0 < i ≤ rule_count ? i - 1 : throw(BoundsError("rule $(i) out of bounds"))
+
 function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, Nothing}=nothing)::PyObject
     if node isa MatchNode
-        if 0 < node.rule_ind ≤ rule_count
-            children = map(translate_match_node, node.children)
-            py"MatchNode"(node.rule_ind - 1, children, path)
-        else
-            throw(BoundsError("Rule index of the match node is out of bounds: $(node)"))
-        end
+        idx = guarded_reindex(node.rule_ind)
+        children = map(translate_match_node, node.children)
+        py"MatchNode"(idx, children, path)
     elseif node isa MatchVar
         py"MatchNode"(string(node.var_name))
     else
@@ -55,15 +54,13 @@ function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, 
     end
 end
 
-enforce_bounds(i::Int)::Int = 0 < i ≤ rule_count ? i : error("rule $(i) out of bounds")
-
 function translate_constraint(c::Constraint)::Tuple{String, Any}
     if c isa ForbiddenPath
-        ("TDF", map!(enforce_bounds, deepcopy(c.sequence)))
+        ("TDF", map!(guarded_reindex, deepcopy(c.sequence)))
     elseif c isa ComesAfter
-        ("TDO", map!(enforce_bounds, push!(deepcopy(c.predecessors), enforce_bounds(c.rule))))
+        ("TDO", map!(guarded_reindex, push!(deepcopy(c.predecessors), c.rule)))
     elseif c isa RequireOnLeft
-        ("LRO", map!(enforce_bounds, deepcopy(c.order)))
+        ("LRO", map!(guarded_reindex, deepcopy(c.order)))
     elseif c isa Ordered
         ("O", [translate_match_node(c.tree), map(string, c.order)])
     elseif c isa LocalOrdered
