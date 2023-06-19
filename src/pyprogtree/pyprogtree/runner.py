@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 #["TDO", [4,8]],
                 #["LRO", [3,0]],
                 #["O", [MatchNode(6, children=[MatchNode("x"), MatchNode("y")]), ["x", "y"]]],
-                ["F", MatchNode(7, children=[MatchNode("x"), MatchNode("x")])]
+                ["F", MatchNode(6, children=[MatchNode("x"), MatchNode("x")])]
     ]
     run(ruletypes, childtypes, typenames, rulenames, constraints)
 
