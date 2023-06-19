@@ -1,4 +1,4 @@
-from time import sleep
+from time import sleep, time
 
 from cpmpy import Model, SolverLookup
 from cpmpy.solvers import CPM_ortools
@@ -59,8 +59,21 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
     # node = MatchNode(2, children=[MatchNode(8), MatchNode(1), MatchNode(1)], fixed_index=3)
     # node.setup(dv)
     # model += constraint_local_forbidden(dv,node)
+
+    # Begin timing of the search:
+    start_time = time()
+    time_measurements = [start_time]
+    search_timing = []
+    # time measurements => [s, t0, t1, t2]
+    # search timing     => [t0 - s, t1 - t0, t2 - t1]
     
     def callback():
+        # Record and save the elapsed time:
+        last_time_id = len(time_measurements) - 1
+        current_time = time()
+        time_measurements.append(current_time)
+        search_timing.append(current_time - time_measurements[last_time_id])
+
         dv.save_solution()
         if plot_solutions:
             print(f"\r{len(dv.solutions)}/{solution_limit} Solutions Found", end="")
@@ -93,10 +106,16 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
     # print(dv.parent[0].value())
     
     print(f"Found {number_of_solutions} solutions")
+
+    # Process the recorder timings:
+    end_time = time()
+    print("Total time elapsed: ", end_time - start_time)
+    print("Total sum of measurements: ", sum(search_timing))
     
     # Return and decision variables to reconstruct the full program tree
     return list(
         zip(map(lambda s: s['parent'][s['init_index']:] - s['init_index'], dv.solutions), 
-            map(lambda s: s['rule'][s['init_index']:], dv.solutions))
+            map(lambda s: s['rule'][s['init_index']:], dv.solutions),
+            search_timing)
     )
 

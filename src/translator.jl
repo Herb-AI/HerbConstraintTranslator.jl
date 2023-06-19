@@ -26,7 +26,7 @@ function solve(
     )
     
     programs = Any[]
-    for (parent, rule) ∈ results
+    for (parent, rule, time) ∈ results
         parent = map(p -> convert(Int64, p) + 1, parent) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
         rule = map(r -> convert(Int64, r) + 1, rule) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
 
@@ -34,7 +34,7 @@ function solve(
         program_tree = decode(parent, rule)
 
         # Convert the MatchNode program tree into a Julia expression and add to programs
-        push!(programs, matchnode2expr(program_tree, grammar))
+        push!(programs, (matchnode2expr(program_tree, grammar), time))
     end
 
     return programs
