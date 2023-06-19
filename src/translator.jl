@@ -19,8 +19,6 @@ function solve(
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
     constraints = map(translate_constraint, grammar.constraints)
 
-    println(ruletypes, childtypes, typenames, rulenames)
-    
     # Solve and obtain decision variables: list of (parent, rule) tuples
     results = py"runner.run"(
         ruletypes, childtypes, typenames, rulenames, constraints, 
@@ -105,7 +103,7 @@ function decode(parent::Vector{Int}, rule::Vector{Int})::MatchNode
     N = length(parent) + 1
     root_id = N # Last node (outside the range of parent array) is the root
     child_nodes = collect(1:(N-1))
-    parental_map = collect(zip(parent, child_nodes))
+    parental_map = reverse!(collect(zip(parent, child_nodes)))
 
     program_tree = build_tree(root_id, parental_map, rule)
 
