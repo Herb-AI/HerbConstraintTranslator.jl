@@ -11,7 +11,7 @@ rule_count = 0
 
 function solve(
     grammar::ContextSensitiveGrammar;
-    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Int=1, plot_solutions::Bool=true
+    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Union{Int, Nothing}=1, plot_solutions::Bool=true
 )
     global rule_count = length(grammar.rules)
 
@@ -19,6 +19,8 @@ function solve(
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
     constraints = map(translate_constraint, grammar.constraints)
 
+    println(ruletypes, childtypes, typenames, rulenames)
+    
     # Solve and obtain decision variables: list of (parent, rule) tuples
     results = py"runner.run"(
         ruletypes, childtypes, typenames, rulenames, constraints, 

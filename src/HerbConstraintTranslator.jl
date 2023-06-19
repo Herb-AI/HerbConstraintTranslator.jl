@@ -6,9 +6,10 @@ using ..HerbConstraints
 
 include("init_env.jl")
 include("translator.jl")
+include("evaluation.jl")
 
 export
     solve
-    translate_constraint
+    typecheck
 
 end # module HerbConstraintTranslator
