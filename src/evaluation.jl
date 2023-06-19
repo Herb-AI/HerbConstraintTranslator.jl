@@ -46,6 +46,8 @@ function unify(expr₁::Term, expr₂::Term)::Type
     end
 end
 
+extract_block(t::Term)::Term = t isa Expr ? t.args[2] : t
+
 function typecheck(expr::Term)::Type
     if expr isa Expr
         if expr.head == :call
@@ -54,7 +56,7 @@ function typecheck(expr::Term)::Type
             checkop(op, args...)
         elseif expr.head == :if
             cond, tblock, eblock = expr.args
-            tbranch, ebranch = tblock.args[2], eblock.args[2]
+            tbranch, ebranch = extract_block(tblock), extract_block(eblock)
             expect(cond, TBool)
             unify(tbranch, ebranch)
         else
