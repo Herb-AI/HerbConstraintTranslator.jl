@@ -56,11 +56,11 @@ end
 
 function translate_constraint(c::Constraint)::Tuple{String, Any}
     if c isa ForbiddenPath
-        ("TDF", map!(guarded_reindex, deepcopy(c.sequence)))
+        ("TDF", map(guarded_reindex, deepcopy(c.sequence)))
     elseif c isa ComesAfter
-        ("TDO", map!(guarded_reindex, push!(deepcopy(c.predecessors), c.rule)))
+        ("TDO", map(guarded_reindex, push!(deepcopy(c.predecessors), c.rule)))
     elseif c isa RequireOnLeft
-        ("LRO", map!(guarded_reindex, deepcopy(c.order)))
+        ("LRO", map(guarded_reindex, deepcopy(c.order)))
     elseif c isa Ordered
         ("O", [translate_match_node(c.tree), map(string, c.order)])
     elseif c isa LocalOrdered
