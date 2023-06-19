@@ -1,3 +1,5 @@
+from time import sleep
+
 from cpmpy import Model, SolverLookup
 from cpmpy.solvers import CPM_ortools
 
@@ -63,11 +65,12 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
         if plot_solutions:
             print(f"\r{len(dv.solutions)}/{solution_limit} Solutions Found", end="")
             plot_tree(g, dv.parent, dv.rule,
+                    save_fig=False,
                     show_types=False,
                     show_rules=True,
                     show_node_index=True,
                     show_empty_nodes=True,
-                    show_lambda_string=lambda n: f"{''}")
+                    show_lambda_string=lambda n: f"{dv.child_index[n].value()}")
 
     print(f"Solving the model... ")
     solver: CPM_ortools = SolverLookup.get(None, model)
@@ -90,8 +93,6 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
     # print(dv.parent[0].value())
     
     print(f"Found {number_of_solutions} solutions")
-
-    #print(dv.compare_solutions())
     
     # Return and decision variables to reconstruct the full program tree
     return list(

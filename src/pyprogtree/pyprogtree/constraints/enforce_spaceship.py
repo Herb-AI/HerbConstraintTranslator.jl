@@ -38,8 +38,8 @@ def enforce_spaceship(dv: DecisionVariables):
             dv.spaceship_helper(n, n, k) == 0
         for n in range(dv.max_n - 1) for k in range(dv.max_n - 1)],
 
-        # Break symmetry: define spaceship for all k
+        # Break symmetry: define spaceship for all k. (tie breaking stops at k>m: borrow value from k=m)
         [
-            dv.spaceship_helper(n, m, k) == 0
+            dv.spaceship_helper(n, m, k) == dv.spaceship_helper(n, m, m)
         for n in range(dv.max_n - 1) for m in range(n + 1) for k in range(m + 1, dv.max_n - 1)]
     ]

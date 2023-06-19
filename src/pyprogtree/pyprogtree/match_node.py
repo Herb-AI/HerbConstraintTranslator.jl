@@ -24,7 +24,7 @@ class MatchNode:
         """
         self.rule = rule
         self.children = [] if children is None else children
-        self.path = path
+        self.path = None if path is None else list(path)
         self.fixed_index = fixed_index
 
     def setup(self, dv: DecisionVariables):
@@ -77,7 +77,7 @@ class MatchNode:
 
     def _location_exists(self):
         if self.location == MatchNode.Location.CHILD:
-            return any((self.dv.child_index[n] == self.child_index) & (self.dv.parent[n] == self.parent) & (n > self.dv.init_index) for n in range(self.dv.max_n-1))
+            return any((self.dv.child_index[n] == self.child_index) & (self.dv.parent[n] == self.parent) & (n >= self.dv.init_index) for n in range(self.dv.max_n-1))
         elif self.location == MatchNode.Location.PATH:
             return any(all(self.dv.ancestor_path[n, d] == self.path[d] for d in range(self.dv.max_depth)) for n in range(self.dv.max_n))
         raise Exception(f"Unable to match location type {MatchNode.Location.name}")

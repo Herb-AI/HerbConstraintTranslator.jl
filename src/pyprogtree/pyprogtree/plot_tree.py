@@ -1,5 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import numpy as np
+
 from pyprogtree.grammar import *
 import random
 
@@ -66,7 +68,7 @@ def hierarchy_pos(G, root=None, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5)
 
     return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
 
-def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node_index=False, show_empty_nodes=False, show_lambda_string=None):
+def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node_index=False, show_empty_nodes=False, show_lambda_string=None, save_fig=False):
     """
     :param g: Grammar
     :param parent: Array(0..N-2) of var int representing the parent of each node. (Node N-1 is assumed to be the root node)
@@ -76,6 +78,7 @@ def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node
     :param show_node_index: boolean indicating if the the node index should be shown INSTEAD of the content of the node
     :param show_empty_nodes: boolean indicating whether nodes with the empty rule should be shown
     :param show_lambda_string: lambda: n -> string. (for debugging purposes)
+    :param save_fig: boolean indicating whether the plot should be saved in the 'figures/' folder
     """
     N = len(parent) + 1
     labels = None
@@ -104,4 +107,6 @@ def plot_tree(g, parent, rule=None, show_rules=True, show_types=False, show_node
     pos = hierarchy_pos(G, N-1) #we assume node N-1 is the root
 
     nx.draw(G, pos=pos, with_labels=labels is not None, labels=labels, node_color="white")
+    if save_fig:
+        plt.savefig("figures/figure" + str(np.random.rand()).replace(".", "")) #to manually verify trees
     plt.show()
