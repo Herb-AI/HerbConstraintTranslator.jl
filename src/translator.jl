@@ -55,13 +55,15 @@ function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, 
     end
 end
 
+enforce_bounds(i::Int)::Int = 0 < i ≤ rule_count ? i : error("rule $(i) out of bounds")
+
 function translate_constraint(c::Constraint)::Tuple{String, Any}
     if c isa ForbiddenPath
-        ("TDF", deepcopy(c.sequence))
+        ("TDF", map!(enforce_bounds, deepcopy(c.sequence)))
     elseif c isa ComesAfter
-        ("TDO", push!(deepcopy(c.predecessors), c.rule))
+        ("TDO", map!(enforce_bounds, push!(deepcopy(c.predecessors), enforce_bounds(c.rule))))
     elseif c isa RequireOnLeft
-        ("LRO", deepcopy(c.order))
+        ("LRO", map!(enforce_bounds, deepcopy(c.order)))
     elseif c isa Ordered
         ("O", [translate_match_node(c.tree), map(string, c.order)])
     elseif c isa LocalOrdered
