@@ -40,7 +40,7 @@ function solve(
     return programs
 end
 
-guarded_reindex(i::Int)::Int = 0 < i ≤ rule_count ? i - 1 : throw(BoundsError("rule $(i) out of bounds"))
+guarded_reindex(i::Int)::Int = 0 < i ≤ rule_count ? i - 1 : error("rule $(i) out of bounds")
 
 function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, Nothing}=nothing)::PyObject
     if node isa MatchNode
@@ -50,7 +50,7 @@ function translate_match_node(node::AbstractMatchNode, path::Union{Vector{Int}, 
     elseif node isa MatchVar
         py"MatchNode"(string(node.var_name))
     else
-        throw(ErrorException("Didn't expect $(typeof(node))!"))
+        error("Didn't expect $(typeof(node))!")
     end
 end
 
@@ -70,7 +70,7 @@ function translate_constraint(c::Constraint)::Tuple{String, Any}
     elseif c isa LocalForbidden
         ("LF", translate_match_node(c.tree, c.path))
     else
-        throw(ErrorException("$(typeof(c)) is unsupported!"))
+        error("$(typeof(c)) is unsupported!")
     end
 end
 
