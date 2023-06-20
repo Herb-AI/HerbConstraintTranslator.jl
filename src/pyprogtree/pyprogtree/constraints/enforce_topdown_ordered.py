@@ -1,6 +1,5 @@
 from pyprogtree.decision_variables import DecisionVariables
 from cpmpy import *
-import numpy as np
 
 """
 Retricts the topdown_rule_index values in two ways:
@@ -11,28 +10,35 @@ Retricts the topdown_rule_index values in two ways:
         need to be in strictly ascending order.
 """
 def enforce_topdown_ordered(dv: DecisionVariables): 
-    constraints = []
-    for sequence in dv.g.TOPDOWN_ORDERED:
-        if len(sequence) > dv.max_depth:
-            for x in range(dv.max_n):
-                 constraints.append(dv.rule[x] != sequence[-1])
-            continue
-        constraints.append(dv.rule[dv.max_n-1] != sequence[-1])
+    first = [
+        (dv.rule[x] != sequence[-1])
 
-        repetition, transition = make_helpers(sequence)
-        for n, path in enumerate(dv.ancestor_rule):
-             for index_set in make_loopies(len(repetition)-1, 1,len(path)):
-                  zippy = list(zip(index_set[:-1],index_set[1:], range(len(transition))))
-                  constraints.append(
-                       (Count([path] + [dv.rule[n]], sequence[-1]) >= 1).implies(
-                        all(
-                            [Count(path[a:b], transition[c]) > repetition[c]-1 for a,b,c in zippy[:-1]]+ [
-                            (Count([path[a:b]] + [dv.rule[n]], transition[c]) > repetition[c]-1) for a,b,c in zippy[-1:]
-                        ])                       
-                       )
-                    )
-    return constraints
+        for sequence in dv.g.TOPDOWN_FORBIDDEN
+        if len(sequence) > dv.max_depth
+        for x in range(dv.max_n)
+    ]
 
+    second = [
+         (Count([path] + [dv.rule[n]], sequence[-1]) >= 1).implies(
+                all([
+                        Count(path[a:b], transition[c]) > repetition[c]-1 for a,b,c in zippy[:-1]
+                    ]+[
+                        (Count([path[a:b]] + [dv.rule[n]], transition[c]) > repetition[c]-1) for a,b,c in zippy[-1:]
+                    ])                       
+            )
+            for sequence, path, n, transition, repetition, zippy in topdown_helper(dv)]
+    
+    return first + second
+
+
+def topdown_helper(dv):
+     for sequence in dv.g.TOPDOWN_ORDERED:
+        if len(sequence) <= dv.max_depth:
+            repetition, transition = make_helpers(sequence)
+            for n, path in enumerate(dv.ancestor_rule):
+                for index_set in make_loopies(len(repetition)-1, 1,len(path)):
+                    zippy = list(zip(index_set[:-1],index_set[1:], range(len(transition))))
+                    yield sequence, path, n, transition, repetition, zippy
 
 def make_loopies(vars, start, depth, acc=[0]):
 	if vars == 0:
