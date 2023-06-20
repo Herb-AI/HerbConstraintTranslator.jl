@@ -13,26 +13,45 @@ to forbid the topdown forbidden constraints. This is necessary since the termina
 included in ancestor_rule.
 """
 def enforce_topdown_forbidden(dv: DecisionVariables):     
-    return [
-        [
-            any(
-                path[start+tdf_range] != tdf[tdf_range] 
-                for tdf_range in range(len(tdf))
-            )
+    constraints = []
+    for sequence in dv.g.TOPDOWN_FORBIDDEN:
+        if len(sequence) > dv.max_depth:
+            for x in range(dv.max_n):
+                 constraints.append(dv.rule[x] != sequence[-1])
+            continue
+        repetition, transition = make_helpers(sequence)
 
-            for tdf in dv.g.TOPDOWN_FORBIDDEN
-            for path in dv.ancestor_rule
-            for start in range(len(path)-len(tdf))
-        ], 
-        [
-            any(
-                [
-                    path[Element(dv.depth, n)-len(tdf)+1 + tdf_idx] != tdf[tdf_idx] 
-                    for tdf_idx in range(len(tdf)-1)
-                ]+[ dv.rule[n] != tdf[-1] ]
-            )
+        for n, path in enumerate(dv.ancestor_rule):
+             for index_set in make_loopies(len(repetition)-1, len(path)):
+                  zippy = list(zip(index_set[:-1],index_set[1:], range(len(transition))))
+                  constraints.append(
+                       any(
+                      [Count(path[a:b], transition[c]) < repetition[c] for a,b,c in zippy[:-1]]+ [
+                            (Count([path[a:b]] + [dv.rule[n]], transition[c]) < repetition[c]) for a,b,c in zippy[-1:]
+                        ])
+                  )
+    return constraints
 
-            for tdf in dv.g.TOPDOWN_FORBIDDEN
-            for n, path in enumerate(dv.ancestor_rule)
-        ]
-    ]
+def make_loopies(vars, depth, acc=[0]):
+	if vars == 0:
+		yield acc+[depth]
+		return
+	for i in range(1, depth):
+		yield from make_loopies(vars - 1, depth, acc + [ i ])
+                
+def make_helpers(sequence):
+    transitions = [sequence[0]]
+    repetitions = []
+    last = sequence[0]
+    count = 0
+
+    for i in sequence:
+        if i != last:
+            repetitions.append(count)
+            count = 1
+            transitions.append(i)
+            last = i
+        else:
+            count += 1
+    repetitions.append(count)
+    return repetitions, transitions      
