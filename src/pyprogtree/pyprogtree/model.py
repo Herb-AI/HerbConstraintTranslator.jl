@@ -18,7 +18,7 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
     :return:
     """
 
-    max_depth = min(max_n, max_depth)
+    max_depth = min(max_n, max_depth-1)
     dv = DecisionVariables(g, min_n, max_n, max_depth)
 
     print("Setting up the model... ", end='')
