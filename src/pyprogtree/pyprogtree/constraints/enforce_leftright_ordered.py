@@ -27,7 +27,6 @@ def enforce_leftright_ordered(dv: DecisionVariables):
                      Count(dv.rule[n+1:], sequence[k-1]) >= 1
                 ) for k in range(1, len(sequence))])
 
-    print(constraints)
     return constraints
 
 

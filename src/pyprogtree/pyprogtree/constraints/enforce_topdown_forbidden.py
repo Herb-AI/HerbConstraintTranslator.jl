@@ -22,22 +22,23 @@ def enforce_topdown_forbidden(dv: DecisionVariables):
         repetition, transition = make_helpers(sequence)
 
         for n, path in enumerate(dv.ancestor_rule):
-             for index_set in make_loopies(len(repetition)-1, len(path)):
+             for index_set in make_loopies(len(repetition)-1, 1, len(path)):
                   zippy = list(zip(index_set[:-1],index_set[1:], range(len(transition))))
+                  print(zippy)
                   constraints.append(
                        any(
-                      [Count(path[a:b], transition[c]) < repetition[c] for a,b,c in zippy[:-1]]+ [
+                      [(Count(path[a:b], transition[c]) < repetition[c]) for a,b,c in zippy[:-1]]+ [
                             (Count([path[a:b]] + [dv.rule[n]], transition[c]) < repetition[c]) for a,b,c in zippy[-1:]
                         ])
                   )
     return constraints
 
-def make_loopies(vars, depth, acc=[0]):
+def make_loopies(vars, start, depth, acc=[0]):
 	if vars == 0:
 		yield acc+[depth]
 		return
-	for i in range(1, depth):
-		yield from make_loopies(vars - 1, depth, acc + [ i ])
+	for i in range(start+1, depth):
+		yield from make_loopies(vars - 1, i, depth, acc + [ i ])
                 
 def make_helpers(sequence):
     transitions = [sequence[0]]
