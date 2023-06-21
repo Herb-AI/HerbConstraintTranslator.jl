@@ -12,13 +12,100 @@ using .HerbData
 using .HerbEvaluation
 using .HerbSearch
 
-# Experiments:
+using Plots
 
-# Redefinition of operators to prevent Julia from assuming commutativity when printing
-+(a, b) = a + b
-*(a, b) = a * b
--(a, b) = a - b
+# -- Utilities --:
 
+function get_solutions_herb(g::Grammar, max_depth::Int, max_size::Int, ret_type::Any)::Vector{Tuple{Any, Float64}}
+    iter_herb = get_bfs_enumerator(g, max_depth, max_size, ret_type)
+
+    solutions = Any[]
+
+    # Time the initial program:
+    start_time = time()
+    next = iterate(iter_herb)
+
+    # Enumerate and time the rest of the programs:
+    while next !== nothing
+        (program, state) = next
+        end_time = time()
+        time_elapsed = end_time - start_time
+        push!(solutions, (rulenode2expr(program, g), time_elapsed))
+
+        start_time = time()
+        next = iterate(iter_herb, state)
+    end
+    
+    return solutions
+end
+function enumerate_herb_solutions(g::Grammar; max_depth::Int, max_size::Int)::Vector{Tuple{Any, Float64}}
+    solutions_herb = Any[]
+    ret_types = collect(keys(g.bytype)) # get all unique return types (LHS) in the grammar
+    for ret_type in ret_types
+        solutions_per_type = get_solutions_herb(g, max_depth, max_size, ret_type)
+        solutions_herb = vcat(solutions_herb, solutions_per_type)
+    end
+    return solutions_herb
+end
+
+function enumerate_cpmpy_solutions(g::Grammar; max_nodes::Int, max_depth::Int, solution_limit::Int, plot_solutions::Bool)::Vector{Tuple{Any, Float64}}
+    return HerbConstraintTranslator.solve(g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
+end
+
+function show_solutions(solutions::Vector{Tuple{Any, Float64}})
+    for (program, time) ∈ solutions
+        println("Program: ", program)
+        println("Time taken: ", time)
+    end
+end
+function show_solutions(solutions_cpmpy::Vector{Tuple{Any, Float64}}, solutions_herb::Vector{Tuple{Any, Float64}})
+    println("CPMpy Solutions")
+    show_solutions(solutions_cpmpy)
+    println("------")
+
+    println("Herb Solutions")
+    show_solutions(solutions_herb)
+    println("------")
+end
+
+function fst()
+    return ((a, _),) -> a
+end
+function snd()
+    return ((_, b),) -> b
+end
+function unzip(xs)
+    return map(fst(), xs), map(snd(), xs)
+end
+
+function plot_solutions(solutions_cpmpy::Vector{Tuple{Any, Float64}}, solutions_herb::Vector{Tuple{Any, Float64}})
+    programs_cpmpy, time_cpmpy = unzip(solutions_cpmpy)
+    programs_herb, time_herb = unzip(solutions_herb)
+
+    N = length(programs_cpmpy)
+    M = length(programs_herb)
+    if N == M
+        display(plot(range(1, length(programs_cpmpy)), [time_cpmpy, time_herb]))
+    else
+        println("The number of enumerated programs is different. CPMpy found ", N, " programs, while Herb found ", M, " programs.")
+        plot_cpmpy = plot(range(1, length(programs_cpmpy)), time_cpmpy, ylabel="CPMpy")
+        plot_herb = plot(range(1, length(programs_herb)), time_herb, ylabel="Herb")
+        display(plot(plot_cpmpy, plot_herb))
+    end
+end
+
+function benchmark(g::Grammar)    
+    solutions_cpmpy = enumerate_cpmpy_solutions(g, max_nodes=5, max_depth=4, solution_limit=typemax(Int), plot_solutions=false)
+    solutions_herb = enumerate_herb_solutions(g, max_depth=4, max_size=5)
+    
+    # show_solutions(solutions_cpmpy, solutions_herb)
+    plot_solutions(solutions_cpmpy[2:end], solutions_herb[2:end])
+end
+
+
+# -- Experiments --:
+
+# Define a base context-free grammar:
 g = HerbGrammar.@csgrammar begin
     Real = |(0:1)
     Real = Bool ? Real : Real
@@ -31,36 +118,20 @@ g = HerbGrammar.@csgrammar begin
     Bool = F
 end
 
-constraint = Forbidden(
-    MatchNode(7, [MatchVar(:x), MatchVar(:x)])
-)
-addconstraint!(g, constraint)
-
-"""
-Size comparison between CPMpy model solution set and Herb enumeration
-"""
 function experiment_1(g::Grammar)
-    println("-- Experiment 1 --")
-    cpmpy_programs = @time HerbConstraintTranslator.solve(g, max_nodes=5, max_depth=4, solution_limit=5, plot_solutions=false)
-    @show size(cpmpy_programs)
-
-    herb_programs1 = @time collect(get_bfs_enumerator(g, 5, 5, :Real))
-    herb_programs2 = @time collect(get_bfs_enumerator(g, 5, 5, :Bool))
-    herb_programs = vcat(herb_programs1, herb_programs2)
-    @show size(herb_programs)
+    println("-- Experiment 1 (unconstrained cfg) --")
+    benchmark(g)
 end
-
-"""
-Timing of the CPMpy model search for individual programs
-"""
 function experiment_2(g::Grammar)
-    println("-- Experiment 2 --")
-    cpmpy_programs = @time HerbConstraintTranslator.solve(g, max_nodes=5, max_depth=4, solution_limit=typemax(Int), plot_solutions=false)
-    for (program, time) ∈ cpmpy_programs
-        println("Time taken: ", time)
-    end
+    println("-- Experiment 2 (forbidden symmetry) --")
+    constraint = Forbidden(
+        MatchNode(7, [MatchVar(:x), MatchVar(:x)])
+    )
+    addconstraint!(g, constraint)
+
+    benchmark(g)
 end
 
 # Run all experiments:
-experiments = [experiment_2]
+experiments = [experiment_1, experiment_2]
 foreach(e -> e(g), experiments)
