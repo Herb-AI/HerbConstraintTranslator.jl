@@ -11,5 +11,7 @@ include("evaluation.jl")
 export
     solve
     typecheck
+    find_diff
+    canonicalize!
 
 end # module HerbConstraintTranslator
