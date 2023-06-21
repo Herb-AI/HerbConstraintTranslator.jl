@@ -145,16 +145,20 @@ function find_diff(ours, theirs)
     (extras, missed)
 end
 
-function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_to_file=true, break_symm=false, run_ours=true)
-    file = open("eval.txt", "a")
-
+function eval(
+    g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int;
+    print_to_file=true, break_symm=false, run_ours=true, label::Union{String, Nothing}=nothing
+)
     outputln = if print_to_file
+        file = open("eval.txt", "a")
         function (args...)
             write(file, map(string, args)..., "\n")
         end
     else println end
 
-    if print_to_file outputln("\n=======================") end
+    if print_to_file 
+        outputln(if label !== nothing "\n====$(label)====" else "\n=======================" end) 
+    end
 
     if run_ours
         our_results = HerbConstraintTranslator.solve(
@@ -227,5 +231,5 @@ function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_
         end
     end
 
-    close(file)
+    if print_to_file close(file) end
 end
