@@ -161,6 +161,8 @@ function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_
             g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, solution_limit=nothing, plot_solutions=false
         )
 
+        outputln("we found $(length(our_results)) solutions")
+
         type_errors = filter(our_results) do expr
             try
                 HerbConstraintTranslator.typecheck(expr)
