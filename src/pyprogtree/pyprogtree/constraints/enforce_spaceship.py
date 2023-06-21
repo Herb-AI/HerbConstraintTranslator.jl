@@ -14,8 +14,8 @@ def enforce_spaceship(dv: DecisionVariables):
     return [
         # Set the spaceship operator for the leaf nodes
         [
-            (dv.rule[n] < dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == -1) &
-            (dv.rule[n] > dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 1) &
+            (dv.rule[n] < dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 1) &
+            (dv.rule[n] > dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == -1) &
             (dv.rule[n] == dv.rule[m]).implies(dv.spaceship_helper(n, m, 0) == 0)
         for n in range(dv.max_n - 1) for m in range(n)],
 
