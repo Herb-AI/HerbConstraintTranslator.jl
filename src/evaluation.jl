@@ -161,3 +161,89 @@ function find_diff(ours, theirs)
 
     (extras, missed)
 end
+
+function eval(max_nodes::Int, max_depth::Int; print_to_file=true, break_symm=false, run_ours = true)
+    file = open("eval.txt", "a")
+
+    outputln = if print_to_file
+        function (args...)
+            write(file, map(string, args)..., "\n")
+        end
+    else println end
+
+    if print_to_file outputln("\n=======================") end
+
+    if run_ours
+        our_results = HerbConstraintTranslator.solve(
+            g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, solution_limit=nothing, plot_solutions=false
+        )
+
+        type_errors = filter(our_results) do expr
+            try
+                HerbConstraintTranslator.typecheck(expr)
+                return false
+            catch err
+                if err isa TypeCheckError return true else throw(err) end
+            end
+        end
+
+        if length(type_errors) > 0
+            outputln("$(length(type_errors)) solutions don't typecheck:")
+        end
+
+        for expr ∈ type_errors
+            outputln(expr)
+        end
+
+        if break_symm
+            HerbConstraintTranslator.canonicalize!.(our_results)
+        end
+    end
+
+    herb_results = @time append!(collect(
+        get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
+        get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
+    herb_results = map(herb_results) do node
+        HerbGrammar.rulenode2expr(node, g)
+    end
+
+    outputln("herb found $(length(herb_results)) solutions")
+
+    if break_symm
+        HerbConstraintTranslator.canonicalize!.(herb_results)
+
+        herb_original = deepcopy(herb_results)
+        count = 0
+        outputln("\nHerb's duplicate solutions after canonicalization:\n")
+        for (i, p₁) ∈ enumerate(herb_results)
+            for (j, p₂) ∈ enumerate(herb_results[i+1:end])
+                if p₁ == p₂
+                    global count += 1
+                    outputln(p₁, "\n")
+                    outputln("originals:")
+                    outputln(herb_original[i])
+                    outputln(herb_original[i+j])
+                    outputln()
+                    deleteat!(herb_results, i+j)
+                end
+            end
+        end
+        outputln("$(count) total duplicates")
+    end
+
+    if run_ours
+        added, missed = HerbConstraintTranslator.find_diff(our_results, herb_results)
+
+        outputln("\n$(length(added)) superfluous programs:\n")
+        for p ∈ added
+            outputln(p, "\n")
+        end
+
+        outputln("\n$(length(missed)) missing programs:\n")
+        for p ∈ missed
+            outputln(p, "\n")
+        end
+    end
+
+    close(file)
+end
