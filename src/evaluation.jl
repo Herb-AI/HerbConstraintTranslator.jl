@@ -162,7 +162,7 @@ function find_diff(ours, theirs)
     (extras, missed)
 end
 
-function eval(max_nodes::Int, max_depth::Int; print_to_file=true, break_symm=false, run_ours = true)
+function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_to_file=true, break_symm=false, run_ours = true)
     file = open("eval.txt", "a")
 
     outputln = if print_to_file
@@ -201,8 +201,8 @@ function eval(max_nodes::Int, max_depth::Int; print_to_file=true, break_symm=fal
     end
 
     herb_results = @time append!(collect(
-        get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
-        get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
+        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
+        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
     herb_results = map(herb_results) do node
         HerbGrammar.rulenode2expr(node, g)
     end

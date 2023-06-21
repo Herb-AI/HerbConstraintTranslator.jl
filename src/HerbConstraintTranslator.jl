@@ -2,6 +2,7 @@ module HerbConstraintTranslator
 
 using PyCall
 using ..HerbGrammar
+using ..HerbSearch
 using ..HerbConstraints
 
 include("init_env.jl")
@@ -10,8 +11,6 @@ include("evaluation.jl")
 
 export
     solve
-    typecheck
-    find_diff
-    canonicalize!
+    eval
 
 end # module HerbConstraintTranslator
