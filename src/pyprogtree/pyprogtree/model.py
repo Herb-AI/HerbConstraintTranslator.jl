@@ -32,8 +32,6 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
         enforce_first_ordering(dv),
         enforce_treesize(dv),
         enforce_spaceship(dv),
-        enforce_topdown_rule_index(dv),
-        enforce_leftright_rule_index(dv),
         enforce_topdown_ordered(dv),
         enforce_topdown_forbidden(dv),
         enforce_leftright_ordered(dv),
