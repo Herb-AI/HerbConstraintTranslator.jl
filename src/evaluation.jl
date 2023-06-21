@@ -145,7 +145,7 @@ function find_diff(ours, theirs)
     (extras, missed)
 end
 
-function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_to_file=true, break_symm=false, run_ours = true)
+function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_to_file=true, break_symm=false, run_ours=true)
     file = open("eval.txt", "a")
 
     outputln = if print_to_file
@@ -161,7 +161,7 @@ function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_
             g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, solution_limit=nothing, plot_solutions=false
         )
 
-        outputln("we found $(length(our_results)) solutions")
+        if print_to_file outputln("we found $(length(our_results)) solutions") end
 
         type_errors = filter(our_results) do expr
             try
@@ -173,16 +173,11 @@ function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_
         end
 
         if length(type_errors) > 0
-            outputln("$(length(type_errors)) solutions don't typecheck:")
+            outputln("$(length(type_errors)) solutions don't typecheck:\n")
+            foreach(outputln, type_errors)
         end
 
-        for expr ∈ type_errors
-            outputln(expr)
-        end
-
-        if break_symm
-            HerbConstraintTranslator.canonicalize!.(our_results)
-        end
+        if break_symm HerbConstraintTranslator.canonicalize!.(our_results) end
     end
 
     herb_results = @time append!(collect(
@@ -199,11 +194,13 @@ function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_
         HerbConstraintTranslator.canonicalize!.(herb_results)
 
         count = 0
-        outputln("\nHerb's duplicate solutions after canonicalization:\n")
         for (i, p₁) ∈ enumerate(herb_results)
             for (j, p₂) ∈ Iterators.reverse(enumerate(herb_results[i+1:end]))
                 if p₁ == p₂
                     count += 1
+                    if count == 1 
+                        outputln("\nHerb's duplicate solutions after canonicalization:\n") 
+                    end
                     outputln(p₁, "\n")
                     outputln("originals:")
                     outputln(herb_original[i])
