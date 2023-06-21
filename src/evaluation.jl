@@ -193,13 +193,13 @@ function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_
     outputln("herb found $(length(herb_results)) solutions")
 
     if break_symm
+        herb_original = deepcopy(herb_results)
         HerbConstraintTranslator.canonicalize!.(herb_results)
 
-        herb_original = deepcopy(herb_results)
         count = 0
         outputln("\nHerb's duplicate solutions after canonicalization:\n")
         for (i, p₁) ∈ enumerate(herb_results)
-            for (j, p₂) ∈ enumerate(herb_results[i+1:end])
+            for (j, p₂) ∈ Iterators.reverse(enumerate(herb_results[i+1:end]))
                 if p₁ == p₂
                     count += 1
                     outputln(p₁, "\n")
