@@ -1,15 +1,22 @@
 class Grammar:
-    def __init__(self, rules):
-        self.TYPES = []
-        self.CHILD_TYPES = []
-        self.TYPE_NAMES = []
-        self.RULE_NAMES = []
-        self.RULE_ARITY = []
-        self.MAX_ARITY = 0
-        self.NUMBER_OF_RULES = 0
-        self.EMPTY_RULE = -1
-        # Set variables:
-        self.grammar_from_rules(rules)
+    def __init__(self, ruletypes, childtypes, typenames, rulenames, constraints):
+        print("init grammar")
+        self.TYPES = ruletypes
+        self.CHILD_TYPES = childtypes
+        self.TYPE_NAMES = typenames
+        self.RULE_NAMES = rulenames
+
+        # Constraints
+        self.TOPDOWN_ORDERED = []
+        self.LEFTRIGHT_ORDERED = []
+        self.TOPDOWN_FORBIDDEN = []
+        self.SUBTREE_ORDERED = []
+        self.SUBTREE_FORBIDDEN = []
+
+        self.add_rule("", "", [])
+        self.update_implicit_vars()
+        self.flatten_child_types()
+        self.add_constraints(constraints)
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
@@ -47,3 +54,20 @@ class Grammar:
         self.add_rules(rules)
         self.update_implicit_vars()
         self.flatten_child_types()
+
+    def add_constraints(self, constraints):
+        for const in constraints:
+            if const[0] == "TDO":
+                if len(const[1]) > 1:
+                    self.TOPDOWN_ORDERED.append(const[1])
+            elif const[0] == "LRO":
+                if len(const[1]) > 1:
+                    self.LEFTRIGHT_ORDERED.append(const[1])
+            elif const[0] == "TDF":
+                self.TOPDOWN_FORBIDDEN.append(const[1])
+            elif const[0] == "O" or const[0] == "LO":
+                self.SUBTREE_ORDERED.append(const[1])
+            elif const[0] == "F" or const[0] == "LF":
+                self.SUBTREE_FORBIDDEN.append(const[1])
+            else:
+                raise Exception("Could not find the intended constraint!")
