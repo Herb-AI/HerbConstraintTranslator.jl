@@ -76,23 +76,6 @@ end
 
 extract_decorated_block(t::DecoratedTerm)::DecoratedTerm = t.expr isa Expr ? t.expr.args[2] : t
 
-function flatten(expr::Term)::Vector{Any}
-    if expr isa Expr
-        if expr.head == :call
-            expr.args
-        elseif expr.head == :if
-            cond, tblock, eblock = expr.args
-            [:if, cond, 
-                extract_decorated_block(tblock), 
-                extract_decorated_block(eblock)]
-        else
-            [expr.head, expr.args...]
-        end
-    elseif expr isa Int || expr isa Symbol
-        [expr]
-    end
-end
-
 function strip!(expr::Expr)::Expr
     map!(expr.args, expr.args) do arg
         if arg isa Expr && arg.head == :block
@@ -218,7 +201,7 @@ function eval(g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int; print_
         for (i, p₁) ∈ enumerate(herb_results)
             for (j, p₂) ∈ enumerate(herb_results[i+1:end])
                 if p₁ == p₂
-                    global count += 1
+                    count += 1
                     outputln(p₁, "\n")
                     outputln("originals:")
                     outputln(herb_original[i])
