@@ -134,13 +134,15 @@ function canonicalize!(expr::Term)::Term
 end
 
 function find_diff(ours, theirs)
-    extras = filter(ours) do p
-        p ∉ theirs
-    end
+    fst = (pair) -> pair[1]
 
-    missed = filter(theirs) do p
+    extras = fst.(filter(collect(enumerate(ours))) do (i, p)
+        p ∉ theirs
+    end)
+
+    missed = fst.(filter(collect(enumerate(theirs))) do (i, p)
         p ∉ ours
-    end
+    end)
 
     (extras, missed)
 end
@@ -156,10 +158,8 @@ function eval(
         end
     else println end
 
-    if print_to_file 
-        outputln(if label !== nothing "\n====$(label)====" else "\n=======================" end) 
-    end
-
+    outputln(if label !== nothing "\n====$(label)====" else "\n=======================" end) 
+    
     if run_ours
         our_results = HerbConstraintTranslator.solve(
             g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, solution_limit=nothing, plot_solutions=false
@@ -181,7 +181,10 @@ function eval(
             foreach(outputln, type_errors)
         end
 
-        if break_symm HerbConstraintTranslator.canonicalize!.(our_results) end
+        if break_symm 
+            our_original = deepcopy(our_results)
+            HerbConstraintTranslator.canonicalize!.(our_results)
+        end
     end
 
     herb_results = @time append!(collect(
@@ -220,14 +223,16 @@ function eval(
     if run_ours
         added, missed = HerbConstraintTranslator.find_diff(our_results, herb_results)
 
-        outputln("\n$(length(added)) superfluous programs:\n")
-        for p ∈ added
-            outputln(p, "\n")
-        end
-
-        outputln("\n$(length(missed)) missing programs:\n")
-        for p ∈ missed
-            outputln(p, "\n")
+        if break_symm
+            outputln("\n$(length(added)) superfluous programs:\n")
+            outputln.(our_original[added], "\n")
+            outputln("\n$(length(missed)) missing programs:\n")
+            outputln.(herb_original[missed], "\n")
+        else
+            outputln("\n$(length(added)) superfluous programs:\n")
+            outputln.(our_results[added], "\n")
+            outputln("\n$(length(missed)) missing programs:\n")
+            outputln.(herb_results[missed], "\n")
         end
     end
 
