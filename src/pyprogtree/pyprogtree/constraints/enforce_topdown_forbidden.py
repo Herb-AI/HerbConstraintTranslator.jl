@@ -10,14 +10,14 @@ constraints state there is less than the repeats in the sequence of this rule, i
 def enforce_topdown_forbidden(dv: DecisionVariables):   
     return [
          any([
-               (Count(path[a:b], transition[c]) < repetition[c]) if c < len(transition)
+               (Count(path[a:b], transition[c]) < repetition[c]) if c < (len(transition)-1)
                else (Count([path[a:b]] + [dv.rule[n]], transition[c]) < repetition[c])
                  
                for a,b,c in list(zip(index_set[:-1],index_set[1:], range(len(transition))))
-        ])
+            ])
                 for sequence in dv.g.TOPDOWN_FORBIDDEN
                 if len(sequence) <= dv.max_depth
                 for repetition, transition in [make_helpers(sequence)]
                 for n, path in enumerate(dv.ancestor_rule)
-                for index_set in range_permutations(len(repetition)-1, 1, len(path))
+                for index_set in range_permutations(len(repetition)-1, 0, len(path))
     ]

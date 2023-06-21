@@ -49,7 +49,7 @@ def range_permutations(vars, start, depth, acc=[0]):
     if vars == 0:
         yield acc+[depth]
         return
-    for i in range(start+1, depth):
+    for i in range(start+1, depth+1):
         yield from range_permutations(vars - 1, i, depth, acc + [ i ])
                 
 def make_helpers(sequence):
