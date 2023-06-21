@@ -58,9 +58,11 @@ class Grammar:
     def add_constraints(self, constraints):
         for const in constraints:
             if const[0] == "TDO":
-                self.TOPDOWN_ORDERED.append(const[1])
+                if len(const[1]) > 1:
+                    self.TOPDOWN_ORDERED.append(const[1])
             elif const[0] == "LRO":
-                self.LEFTRIGHT_ORDERED.append(const[1])
+                if len(const[1]) > 1:
+                    self.LEFTRIGHT_ORDERED.append(const[1])
             elif const[0] == "TDF":
                 self.TOPDOWN_FORBIDDEN.append(const[1])
             elif const[0] == "O" or const[0] == "LO":
