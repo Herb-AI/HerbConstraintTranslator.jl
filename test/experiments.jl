@@ -83,7 +83,7 @@ function unzip(xs)
     return map(fst(), xs), map(snd(), xs)
 end
 
-function plot_all_solutions(solutions_cpmpy::Vector{Tuple{Any, Float64}}, solutions_herb::Vector{Tuple{Any, Float64}})
+function plot_all_solutions(experiment::String, solutions_cpmpy::Vector{Tuple{Any, Float64}}, solutions_herb::Vector{Tuple{Any, Float64}})
     programs_cpmpy, time_cpmpy = unzip(solutions_cpmpy)
     programs_herb, time_herb = unzip(solutions_herb)
 
@@ -96,27 +96,27 @@ function plot_all_solutions(solutions_cpmpy::Vector{Tuple{Any, Float64}}, soluti
         # Plot time taken per solution:
         plot(range(1, N), time_cpmpy, label="CPMpy")
         final_plot = plot!(range(1, M), time_herb, label="Herb")
-        final_plot = plot(final_plot, xlabel="#Programs", ylabel="Time", title="Time Taken per Solution")
-        savefig(final_plot, "time_taken_per_solution.png")
-        # display(final_plot)
+        final_plot = plot(final_plot, xlabel="#Programs", ylabel="Time", title=string("Time Taken per Solution", " (", experiment, ")"))
+        # savefig(final_plot, "time_taken_per_solution.png")
+        display(final_plot)
 
         # Plot cumulative time taken:
         plot(range(1, N), time_cpmpy_cum, label="CPMpy")
         final_plot = plot!(range(1, M), time_herb_cum, label="Herb")
-        final_plot = plot(final_plot, xlabel="#Programs", ylabel="Time", title="Cumulative Time Taken")
-        savefig(final_plot, "cumulative_time_taken.png")
-        # display(final_plot)
+        final_plot = plot(final_plot, xlabel="#Programs", ylabel="Time", title=string("Cumulative Time Taken", " (", experiment, ")"))
+        # savefig(final_plot, "cumulative_time_taken.png")
+        display(final_plot)
     else
         println("The number of enumerated programs is different. CPMpy found ", N, " programs, while Herb found ", M, " programs.")
     end
 end
 
-function benchmark(g::Grammar; max_nodes::Int, max_depth::Int, solution_limit::Int, plot_solutions::Bool)    
+function benchmark(experiment::String, g::Grammar; max_nodes::Int, max_depth::Int, solution_limit::Int, plot_solutions::Bool)    
     solutions_cpmpy = enumerate_cpmpy_solutions(g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
     solutions_herb = enumerate_herb_solutions(g, max_depth=max_depth, max_nodes=max_nodes)
     
     # show_all_solutions(solutions_cpmpy, solutions_herb)
-    plot_all_solutions(solutions_cpmpy[2:end], solutions_herb[2:end])
+    plot_all_solutions(experiment, solutions_cpmpy[2:end], solutions_herb[2:end])
 end
 
 
@@ -136,16 +136,18 @@ end
 
 function experiment_1(g::Grammar)
     println("-- Experiment 1 (unconstrained cfg) --")
+    experiment = "Experiment 1"
 
     max_nodes = 4
     max_depth = 4
     solution_limit = typemax(Int)
     plot_solutions = false
     
-    benchmark(g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
+    benchmark(experiment, g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
 end
 function experiment_2(g::Grammar)
     println("-- Experiment 2 (forbidden symmetry) --")
+    experiment = "Experiment 2"
 
     constraint = Forbidden(
         MatchNode(7, [MatchVar(:x), MatchVar(:x)])
@@ -158,10 +160,12 @@ function experiment_2(g::Grammar)
     solution_limit = typemax(Int)
     plot_solutions = false
 
-    benchmark(g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
+    benchmark(experiment, g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
 end
 function experiment_3(g::Grammar)
     println("-- Experiment 3 (permutation of constraints) --")
+    experiment = "Experiment 3"
+
     constraints = [
         [
             TopDownOrdered(1, [4]),
@@ -200,9 +204,9 @@ function experiment_3(g::Grammar)
     solution_limit = typemax(Int)
     plot_solutions = false
 
-    benchmark(g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
+    benchmark(experiment, g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
 end
 
 # Run all experiments:
-experiments = [experiment_3]
+experiments = [experiment_1, experiment_2, experiment_3]
 foreach(e -> e(g), experiments)
