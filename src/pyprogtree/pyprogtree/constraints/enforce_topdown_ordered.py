@@ -47,7 +47,6 @@ def enforce_topdown_ordered(dv: DecisionVariables):
 
 def range_permutations(vars, start, depth, acc=[0]):
     if vars == 0:
-        print(acc+[depth])
         yield acc+[depth]
         return
     for i in range(start+1, depth):
