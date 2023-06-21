@@ -16,7 +16,7 @@ def enforce_tree(dv: DecisionVariables):
         # Non-root nodes are 1 more deep than their parents
         [dv.depth[n] == dv.depth[dv.parent[n]] + 1 for n in range(dv.max_n - 1)],
 
-        [(n >= dv.init_index).implies(dv.depth[n] <= dv.max_depth) for n in range(dv.max_n - 1)],
+        [(n >= dv.init_index).implies(dv.depth[n] < dv.max_depth) for n in range(dv.max_n - 1)],
 
         # Enforce the children of each node are of the correct type: TYPES[rule[n]] == CHILD_TYPES[rule[parent[n]], child_index[n]]
         [
