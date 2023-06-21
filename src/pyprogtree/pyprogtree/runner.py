@@ -18,31 +18,23 @@ def run(ruletypes, childtypes, typenames, rulenames, constraints,
     return solve(g, min_nodes, max_nodes, max_depth, solution_limit, plot_solutions)
 
 if __name__ == "__main__":
-    ruletypes  = [0, 0, 0, 0, 1, 1, 0, 1, 1, 1]
-    childtypes = [[], [], [1, 0, 0], [0], [1], [1, 1], [0, 0], [0, 0], [], []]
+    ruletypes  = [0, 0, 0, 1, 1]
+    childtypes = [[], [], [1, 0, 0], [], []]
     typenames  = ['Real', 'Bool']
-    rulenames  = ['3', '4', '?', 'Sqrt', 'Not', '&&', '+', '>=', 'T', 'F']
+    rulenames  = ['3', '4', '?', 'T', 'F']
     constraints = [
                 #["TDF",[4,4]],
-                #["TDO", [4,8]],
+                ["TDO", [5,9]],
                 #["LRO", [3,0]],
                 #["O", [MatchNode(6, children=[MatchNode("x"), MatchNode("y")]), ["x", "y"]]],
-                ["F", MatchNode(6, children=[MatchNode("x"), MatchNode("x")])]
+                #["F", MatchNode(6, children=[MatchNode("x"), MatchNode("x")])]
     ]
     run(ruletypes, childtypes, typenames, rulenames, constraints)
 
 """
 The test grammar:
-[
-    ["3", "Real", []],
-    ["4", "Real", []],
-    ["?", "Real", ["Bool", "Real", "Real"]],
-    ["Sqrt", "Real", ["Real"]],
-    ["Not", "Bool", ["Bool"]],
-    ["&&", "Bool", ["Bool", "Bool"]],
-    ["+", "Real", ["Real", "Real"]],
-    [">=", "Bool", ["Real", "Real"]],
-    ["T", "Bool", []],
-    ["F", "Bool", []]
-]
+    ruletypes  = [0, 0, 0, 0, 1, 1, 0, 1, 1, 1]
+    childtypes = [[], [], [1, 0, 0], [0], [1], [1, 1], [0, 0], [0, 0], [], []]
+    typenames  = ['Real', 'Bool']
+    rulenames  = ['3', '4', '?', 'Sqrt', 'Not', '&&', '+', '>=', 'T', 'F']
 """
