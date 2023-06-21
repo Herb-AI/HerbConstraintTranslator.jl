@@ -160,6 +160,15 @@ function eval(
 
     outputln(if label !== nothing "\n====$(label)====" else "\n=======================" end) 
     
+    herb_results = @time append!(collect(
+        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
+        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
+    herb_results = map(herb_results) do node
+        HerbGrammar.rulenode2expr(node, g)
+    end
+
+    outputln("herb found $(length(herb_results)) solutions")
+
     if run_ours
         our_results = HerbConstraintTranslator.solve(
             g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, solution_limit=nothing, plot_solutions=false
@@ -183,44 +192,29 @@ function eval(
 
         if break_symm 
             our_original = deepcopy(our_results)
+            herb_original = deepcopy(herb_results)
             HerbConstraintTranslator.canonicalize!.(our_results)
-        end
-    end
+            HerbConstraintTranslator.canonicalize!.(herb_results)
 
-    herb_results = @time append!(collect(
-        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
-        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
-    herb_results = map(herb_results) do node
-        HerbGrammar.rulenode2expr(node, g)
-    end
-
-    outputln("herb found $(length(herb_results)) solutions")
-
-    if break_symm
-        herb_original = deepcopy(herb_results)
-        HerbConstraintTranslator.canonicalize!.(herb_results)
-
-        count = 0
-        for (i, p₁) ∈ enumerate(herb_results)
-            for (j, p₂) ∈ Iterators.reverse(enumerate(herb_results[i+1:end]))
-                if p₁ == p₂
-                    count += 1
-                    if count == 1 
-                        outputln("\nHerb's duplicate solutions after canonicalization:\n") 
+            count = 0
+            for (i, p₁) ∈ enumerate(our_results)
+                for (j, p₂) ∈ Iterators.reverse(enumerate(our_results[i+1:end]))
+                    if p₁ == p₂
+                        count += 1
+                        if count == 1 
+                            outputln("\nOur duplicate solutions after canonicalization:\n") 
+                        end
+                        outputln("-----------\n", p₁, "\n")
+                        outputln("originals:")
+                        outputln(our_original[i])
+                        outputln(our_original[i+j])
+                        outputln()
                     end
-                    outputln(p₁, "\n")
-                    outputln("originals:")
-                    outputln(herb_original[i])
-                    outputln(herb_original[i+j])
-                    outputln()
-                    deleteat!(herb_results, i+j)
                 end
             end
+            if count > 0 outputln("$(count) total duplicates") end
         end
-        outputln("$(count) total duplicates")
-    end
 
-    if run_ours
         added, missed = HerbConstraintTranslator.find_diff(our_results, herb_results)
 
         if break_symm
