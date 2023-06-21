@@ -67,7 +67,4 @@ def make_helpers(sequence):
         else:
             count += 1
     repetitions.append(count)
-    print(f"sequence: {sequence}")
-    print(f"repetitions: {repetitions}")
-    print(f"transitions: {transitions}")
     return repetitions, transitions      
