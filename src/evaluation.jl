@@ -133,14 +133,12 @@ function canonicalize!(expr::Term)::Term
     undecorate!(a)
 end
 
-function find_diff(ours, theirs)
-    fst = (pair) -> pair[1]
-
-    extras = fst.(filter(collect(enumerate(ours))) do (i, p)
+function diff_args(ours, theirs)
+    extras = first.(filter(collect(enumerate(ours))) do (i, p)
         p ∉ theirs
     end)
 
-    missed = fst.(filter(collect(enumerate(theirs))) do (i, p)
+    missed = first.(filter(collect(enumerate(theirs))) do (i, p)
         p ∉ ours
     end)
 
@@ -149,7 +147,8 @@ end
 
 function eval(
     g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int;
-    print_to_file=true, break_symm=false, run_ours=true, label::Union{String, Nothing}=nothing
+    break_symm=false, compare_with_herb=true, solution_limit=nothing,
+    print_to_file=true, label=nothing
 )
     outputln = if print_to_file
         file = open("eval.txt", "a")
@@ -158,64 +157,82 @@ function eval(
         end
     else println end
 
-    outputln(if label !== nothing "\n====$(label)====" else "\n=======================" end) 
+    failed = false
+
+    header = if label !== nothing "\n====$(label)====" else "\n=======================" end
+
+    if print_to_file
+        outputln(header)
+    end
     
-    herb_results = @time append!(collect(
-        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
-        HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
-    herb_results = map(herb_results) do node
-        HerbGrammar.rulenode2expr(node, g)
+    println(header)
+
+    if compare_with_herb
+        herb_results = @time append!(collect(
+            HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
+            HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
+        herb_results = map(herb_results) do node
+            HerbGrammar.rulenode2expr(node, g)
+        end
     end
 
-    outputln("herb found $(length(herb_results)) solutions")
+    outputln("herb found $(length(herb_results)) solutions\nHerb took")
 
-    if run_ours
-        our_results = HerbConstraintTranslator.solve(
-            g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, solution_limit=nothing, plot_solutions=false
-        )
+    our_results = HerbConstraintTranslator.solve(
+        g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, 
+        solution_limit=solution_limit, plot_solutions=false
+    )
 
-        if print_to_file outputln("we found $(length(our_results)) solutions") end
+    if print_to_file outputln("we found $(length(our_results)) solutions") end
 
-        type_errors = filter(our_results) do expr
-            try
-                HerbConstraintTranslator.typecheck(expr)
-                return false
-            catch err
-                if err isa TypeCheckError return true else throw(err) end
-            end
+    type_errors = filter(our_results) do expr
+        try
+            HerbConstraintTranslator.typecheck(expr)
+            return false
+        catch err
+            if err isa TypeCheckError return true else throw(err) end
         end
+    end
 
-        if length(type_errors) > 0
-            outputln("$(length(type_errors)) solutions don't typecheck:\n")
-            foreach(outputln, type_errors)
-        end
+    if length(type_errors) > 0
+        failed = true
+        outputln("$(length(type_errors)) solutions don't typecheck:\n")
+        foreach(outputln, type_errors)
+    end
 
-        if break_symm 
-            our_original = deepcopy(our_results)
-            herb_original = deepcopy(herb_results)
-            HerbConstraintTranslator.canonicalize!.(our_results)
-            HerbConstraintTranslator.canonicalize!.(herb_results)
+    if break_symm
+        our_original = deepcopy(our_results)
+        HerbConstraintTranslator.canonicalize!.(our_results)
 
-            count = 0
-            for (i, p₁) ∈ enumerate(our_results)
-                for (j, p₂) ∈ Iterators.reverse(enumerate(our_results[i+1:end]))
-                    if p₁ == p₂
-                        count += 1
-                        if count == 1 
-                            outputln("\nOur duplicate solutions after canonicalization:\n") 
-                        end
-                        outputln("-----------\n", p₁, "\n")
-                        outputln("originals:")
-                        outputln(our_original[i])
-                        outputln(our_original[i+j])
-                        outputln()
+        count = 0
+        for (i, p₁) ∈ enumerate(our_results)
+            for (j, p₂) ∈ enumerate(our_results[i+1:end])
+                if p₁ == p₂
+                    count += 1
+                    if count == 1
+                        failed = true
+                        outputln("\nOur duplicate solutions after canonicalization:\n") 
                     end
+                    outputln("-----------\n", p₁, "\n")
+                    outputln("originals:")
+                    outputln(our_original[i])
+                    outputln(our_original[i+j])
+                    outputln()
                 end
             end
-            if count > 0 outputln("$(count) total duplicates") end
         end
+        if count > 0 outputln("$(count) total duplicates") end
+    end
 
-        added, missed = HerbConstraintTranslator.find_diff(our_results, herb_results)
+    if compare_with_herb
+        if break_symm
+            herb_original = deepcopy(herb_results)
+            HerbConstraintTranslator.canonicalize!.(herb_results)
+        end
+        
+        added, missed = HerbConstraintTranslator.diff_args(our_results, herb_results)
+
+        failed |= !(length(added) == length(missed) == 0)
 
         if break_symm
             outputln("\n$(length(added)) superfluous programs:\n")
@@ -231,4 +248,7 @@ function eval(
     end
 
     if print_to_file close(file) end
+
+    return !failed
 end
+
