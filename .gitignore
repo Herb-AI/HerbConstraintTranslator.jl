@@ -30,3 +30,4 @@ src/pyprogtree/__pycache__
 src/pyprogtree/build
 src/pyprogtree/pyprogtree.egg-info
 src/pyprogtree/constraints.egg-info
+timing/*
