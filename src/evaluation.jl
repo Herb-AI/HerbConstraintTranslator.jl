@@ -173,6 +173,7 @@ function eval(
         our_results = HerbConstraintTranslator.solve(
             g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, solution_limit=nothing, plot_solutions=false
         )
+        our_results = map((x) -> x[1], our_results)
 
         if print_to_file outputln("we found $(length(our_results)) solutions") end
 
