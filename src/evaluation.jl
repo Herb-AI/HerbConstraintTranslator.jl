@@ -98,7 +98,7 @@ function decorate!(expr::Term)::DecoratedTerm
     if !(expr isa Expr) return DecoratedTerm(expr, sum(Int, string(expr))) end
     expr.args = decorate!.(expr.args)
     bases = [5 ^ i for i ∈ 0:length(expr.args)]
-    size = 1 + sum(zip(expr.args, bases), init=0) do (arg, base)
+    size = sum(zip(expr.args, bases), init=0) do (arg, base)
         arg.size * base
     end
     return DecoratedTerm(expr, size)
@@ -141,12 +141,23 @@ function diff_args(ours, theirs)
     missed = first.(filter(collect(enumerate(theirs))) do (i, p)
         p ∉ ours
     end)
-
+    
     (extras, missed)
 end
 
+function trimTiming(filename::String)::Vector{String}
+    text = open(filename) do file
+        read(file, String)
+    end
+    pattern = r"init grammar\nSetting up decision variables... DONE\nSetting up the model... (return type set to [01])?\nDONE\nSolving the model...\n\n"
+    blocks = split(replace(text, pattern=>""), "\n\n")
+    lineblocks = split.(blocks, "\n")
+    deleteat!.(lineblocks, 3)
+    blocks = join.(lineblocks, "\n")
+end
+
 function eval(
-    g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int;
+    g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int, return_type::Union{Int, Nothing}=nothing;
     break_symm=false, compare_with_herb=true, solution_limit=nothing,
     print_to_file=true, label=nothing
 )
@@ -168,18 +179,24 @@ function eval(
     println(header)
 
     if compare_with_herb
-        herb_results = @time append!(collect(
-            HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
-            HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
+        print("Herb took")
+        if return_type !== nothing
+            ret = reverse(collect(keys(g.bytype)))[return_type]
+            herb_results = @time collect(HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, ret))
+        else
+            herb_results = @time append!(collect(
+                HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Real)),
+                HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, :Bool))
+        end
         herb_results = map(herb_results) do node
             HerbGrammar.rulenode2expr(node, g)
         end
     end
 
-    outputln("herb found $(length(herb_results)) solutions\nHerb took")
+    outputln("Herb found $(length(herb_results)) solutions")
 
     our_results = HerbConstraintTranslator.solve(
-        g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, 
+        g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, return_type=return_type, 
         solution_limit=solution_limit, plot_solutions=false
     )
 

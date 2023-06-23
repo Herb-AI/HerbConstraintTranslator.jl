@@ -17,11 +17,14 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
     :param solution_limit: maximum number of solution to create
     :return:
     """
+    if return_type != None:
+        return_type -= 1
+        assert 0 <= return_type < len(g.TYPE_NAMES), "Return type out of bounds!"
 
     max_depth = min(max_n, max_depth)
-    dv = DecisionVariables(g, min_n, max_n, max_depth)
+    dv = DecisionVariables(g, min_n, max_n, max_depth, return_type)
 
-    print("Setting up the model... ", end='')
+    #print("Setting up the model... ", end='')
 
     model = Model(
         enforce_tree(dv),
@@ -39,7 +42,7 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
         enforce_subtree_ordered(dv),
         #enforce_implied_constraints(dv)
     )
-    print("DONE")
+    #print("DONE")
 
     # # Fixed tree structure:
     # model += (dv.rule[9] == dv.g.RULE_NAMES.index("?"))
@@ -70,10 +73,10 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
                     show_empty_nodes=True,
                     show_lambda_string=lambda n: f"{dv.child_index[n].value()}")
 
-    print(f"Solving the model... ")
+    #print(f"Solving the model... ")
     solver: CPM_ortools = SolverLookup.get(None, model)
     number_of_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
-    print("")
+    #print("")
 
     # print("PARENT:", dv.parent.value())
     # print("CHILD INDEX:", dv.child_index.value())

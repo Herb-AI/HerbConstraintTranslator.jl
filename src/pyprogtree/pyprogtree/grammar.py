@@ -1,6 +1,5 @@
 class Grammar:
     def __init__(self, ruletypes, childtypes, typenames, rulenames, constraints):
-        print("init grammar")
         self.TYPES = ruletypes
         self.CHILD_TYPES = childtypes
         self.TYPE_NAMES = typenames

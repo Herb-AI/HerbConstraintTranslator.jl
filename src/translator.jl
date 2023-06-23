@@ -11,7 +11,8 @@ rule_count = 0
 
 function solve(
     grammar::ContextSensitiveGrammar;
-    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, solution_limit::Union{Int, Nothing}=1, plot_solutions::Bool=true
+    min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, return_type::Union{Int, Nothing}=nothing, 
+    solution_limit::Union{Int, Nothing}=1, plot_solutions::Bool=true
 )
     global rule_count = length(grammar.rules)
 
@@ -22,7 +23,7 @@ function solve(
     # Solve and obtain decision variables: list of (parent, rule) tuples
     results = py"runner.run"(
         ruletypes, childtypes, typenames, rulenames, constraints, 
-        min_nodes, max_nodes, max_depth, solution_limit, plot_solutions
+        min_nodes, max_nodes, max_depth, return_type, solution_limit, plot_solutions
     )
     
     programs = Any[]
@@ -75,7 +76,7 @@ function translate_constraint(c::Constraint)::Tuple{String, Any}
 end
 
 function translate(grammar::ContextSensitiveGrammar)::GrammarEncoding
-    typenames  = collect(keys(grammar.bytype))
+    typenames  = reverse(collect(keys(grammar.bytype)))
     typeindex  = Dict(zip(typenames, 0:length(typenames)-1))
     # rename type symbols with their indeces
     ruletypes  = map(t -> typeindex[t], grammar.types)
