@@ -30,9 +30,9 @@ class DecisionVariables:
         self.treesize             = intvar( 1, max_n,                 shape=max_n,                        name="TreeSize")
         self.spaceship_1D         = intvar(-1, 1,                     shape=(max_n-1)**3,                 name="<=>")
 
-        self.topdown_rule_indexes   = [[intvar(0, self.max_depth+1, shape=(dim,), name=f"TopDownRuleIndexes-{i}") 
+        self.topdown_rule_indexes   = [[intvar(0, max_depth+1, shape=(dim,), name=f"TopDown{n}Rule{i}Indexes") 
                                        if dim > 0 else None for i, dim in enumerate(g.TOPDOWN_DIMENSIONS)
-                                       ] for _ in range(max_n - 1)]
+                                       ] for n in range(max_n - 1)]
         
         # self.leftright_rule_indexes = [intvar(0, g.NUMBER_OF_RULES - 1, shape=dim, name=f"LeftRightRuleIndexes-{i}") 
         #                                if dim > 0 else None for i, dim in enumerate(g.TOPDOWN_DIMENSIONS)]

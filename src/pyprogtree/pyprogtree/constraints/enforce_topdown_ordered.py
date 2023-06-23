@@ -17,9 +17,10 @@ def enforce_topdown_ordered(dv: DecisionVariables):
     constraints = []
     for n in range(dv.max_n-1):
         for indexing, sequence in dv.g.TOPDOWN_ORDERED:
-            for i in range(len(sequence)-1):
-                constraints.append(((Count([dv.ancestor_path[n]] + [dv.rule[n]], sequence[-1])) > 0).implies(
-                    dv.topdown_rule_indexes[n][sequence[i]][indexing[i]] <= dv.topdown_rule_indexes[n][sequence[i+1]][indexing[i+1]]))
-
-    print(f"ordered: {constraints}")
+            constraints.append(
+                ((dv.topdown_rule_indexes[n][sequence[-1]][0] == (dv.max_depth+1)) |
+                 all(
+                    [(dv.topdown_rule_indexes[n][sequence[i]][indexing[i]] < dv.topdown_rule_indexes[n][sequence[i+1]][indexing[i+1]]) for i in range(len(sequence)-1)]
+                )))
+            
     return constraints

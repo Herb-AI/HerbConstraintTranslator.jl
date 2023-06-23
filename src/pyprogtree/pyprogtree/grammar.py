@@ -19,7 +19,12 @@ class Grammar:
         
         self.TOPDOWN_DIMENSIONS = [0 for _ in range(self.NUMBER_OF_RULES-1)]
         self.LEFTRIGHT_DIMENSIONS = [0 for _ in range(self.NUMBER_OF_RULES-1)]
+        self.TOPDOWN_REPEATS = []
+        self.LEFTRIGHT_REPEATS = []
         self.add_constraints(constraints)
+
+        print(f"tdo: {self.TOPDOWN_ORDERED}")
+        print(f"tdd: {self.TOPDOWN_DIMENSIONS}")
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
@@ -61,10 +66,10 @@ class Grammar:
     def add_constraints(self, constraints):
         for const in constraints:
             if const[0] == "TDO":
-                self.store_traversal(const, self.TOPDOWN_ORDERED, self.TOPDOWN_DIMENSIONS)
+                self.store_traversal(const, self.TOPDOWN_ORDERED, self.TOPDOWN_DIMENSIONS, self.TOPDOWN_REPEATS)
             elif const[0] == "LRO":
                 if len(const[1]) > 1:
-                    self.store_traversal(const, self.LEFTRIGHT_ORDERED, self.LEFTRIGHT_DIMENSIONS)
+                    self.store_traversal(const, self.LEFTRIGHT_ORDERED, self.LEFTRIGHT_DIMENSIONS, self.LEFTRIGHT_REPEATS)
             elif const[0] == "TDF":
                 self.store_traversal(const, self.TOPDOWN_ORDERED, self.TOPDOWN_DIMENSIONS)
             elif const[0] == "O" or const[0] == "LO":
@@ -74,7 +79,7 @@ class Grammar:
             else:
                 raise Exception("Could not find the intended constraint!")
             
-    def store_traversal(self, const, constraint, dimension):
+    def store_traversal(self, const, constraint, dimension, repeats=None):
         count = {}
         indexing = []
 
@@ -86,6 +91,11 @@ class Grammar:
             else:
                 count[e] = 1
                 indexing.append(0)
+        
+        # Check if there are no repeats if this is not allowed
+        if repeats is not None and indexing[-1] != 0:
+            repeats.append(const[1][-1])
+            return
         
         # Add indexing of constraint, and constraint sequence
         constraint.append([indexing, const[1]])
