@@ -20,7 +20,6 @@ class Grammar:
         self.TOPDOWN_DIMENSIONS = [0 for _ in range(self.NUMBER_OF_RULES-1)]
         self.LEFTRIGHT_DIMENSIONS = [0 for _ in range(self.NUMBER_OF_RULES-1)]
         self.TOPDOWN_REPEATS = []
-        self.LEFTRIGHT_REPEATS = []
         self.add_constraints(constraints)
 
         print(f"tdo: {self.TOPDOWN_ORDERED}")
@@ -68,12 +67,16 @@ class Grammar:
     def add_constraints(self, constraints):
         for const in constraints:
             if const[0] == "TDO":
-                self.store_traversal(const, self.TOPDOWN_ORDERED, self.TOPDOWN_DIMENSIONS, self.TOPDOWN_REPEATS)
+                if len(const[1]) > 1: 
+                    self.store_traversal(const, self.TOPDOWN_ORDERED, self.TOPDOWN_DIMENSIONS, self.TOPDOWN_REPEATS)
             elif const[0] == "LRO":
-                if len(const[1]) > 1:
-                    self.store_traversal(const, self.LEFTRIGHT_ORDERED, self.LEFTRIGHT_DIMENSIONS, self.LEFTRIGHT_REPEATS)
+                if len(const[1]) > 1: 
+                    self.store_traversal(const, self.LEFTRIGHT_ORDERED, self.LEFTRIGHT_DIMENSIONS)
             elif const[0] == "TDF":
-                self.store_traversal(const, self.TOPDOWN_FORBIDDEN, self.TOPDOWN_DIMENSIONS)
+                if len(const[1]) == 1:
+                    self.TOPDOWN_REPEATS.append(const[1][0])
+                else:
+                    self.store_traversal(const, self.TOPDOWN_FORBIDDEN, self.TOPDOWN_DIMENSIONS)
             elif const[0] == "O" or const[0] == "LO":
                 self.SUBTREE_ORDERED.append(const[1])
             elif const[0] == "F" or const[0] == "LF":
