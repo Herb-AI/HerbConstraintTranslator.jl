@@ -5,19 +5,21 @@ from cpmpy.expressions.core import Expression
 from pyprogtree.grammar import Grammar
 
 class DecisionVariables:
-    def __init__(self, g: Grammar, min_n: int, max_n: int, max_depth: int):
+    def __init__(self, g: Grammar, min_n: int, max_n: int, max_depth: int, return_type: int):
         """
         :param g:           Context Free Grammar to encode.
         :param min_n:       Minimum number of nodes in the tree.
         :param max_n:       Maximum number of nodes in the tree.
         :param max_depth:   Maximum depth of the tree.
+        :param return_type: Rule number of the root node
         """
         self.g = g
         self.min_n = min_n
         self.max_n = max_n
         self.max_depth = max_depth
+        self.return_type = return_type
 
-        print("Setting up decision variables... ", end='')        
+        #print("Setting up decision variables... ", end='')        
         self.rule                 = intvar( 0, g.NUMBER_OF_RULES - 1, shape=max_n,                        name="Rules")
         self.parent               = intvar(-1, max_n-1,               shape=max_n-1,                      name="Parent")
         self.depth                = intvar( 0, max_depth,             shape=max_n,                        name="Distance")
@@ -29,7 +31,7 @@ class DecisionVariables:
         self.ancestor_rule        = intvar(-1, g.NUMBER_OF_RULES - 1, shape=(max_n-1, max_depth),         name="AncestorRule")
         self.treesize             = intvar( 1, max_n,                 shape=max_n,                        name="TreeSize")
         self.spaceship_1D         = intvar(-1, 1,                     shape=(max_n-1)**3,                 name="<=>")
-        print("DONE")
+        #print("DONE")
 
         self.solutions = []
 

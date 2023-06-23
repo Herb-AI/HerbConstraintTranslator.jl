@@ -13,6 +13,8 @@ def enforce_tree(dv: DecisionVariables):
         # Assumption: Node N-1 is the root node. Root node has distance 0 to itself.
         dv.depth[dv.max_n - 1] == 0,
 
+        Element(dv.g.TYPES, dv.rule[dv.max_n - 1]) == dv.return_type if dv.return_type != None else [],
+
         # Non-root nodes are 1 more deep than their parents
         [dv.depth[n] == dv.depth[dv.parent[n]] + 1 for n in range(dv.max_n - 1)],
 
