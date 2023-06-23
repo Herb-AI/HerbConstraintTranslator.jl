@@ -36,7 +36,7 @@ def enforce_topdown_rule_indexes(dv: DecisionVariables):
                                     ((abs(dv.ancestor_rule[n,d2] - r) * (dv.max_depth+1) + d2)) for d2 in range(d, dv.max_depth)
                                 ]) == dv.topdown_rule_indexes[n][r][occurence]
                         ))
-                        for d in range(dv.max_depth)]
+                        for d in range(occurence,dv.max_depth)]
                     )
 
     return constraints

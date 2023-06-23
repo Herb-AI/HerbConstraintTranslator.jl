@@ -7,17 +7,14 @@ be divided into, and checks if for all these ranges, at least one of the constra
 constraints state there is less than the repeats in the sequence of this rule, in this sequence. 
 """
 def enforce_topdown_forbidden(dv: DecisionVariables):   
-    pass
-    # return [
-    #      any([
-    #            (Count(path[a:b], transition[c]) < repetition[c]) if c < (len(transition)-1)
-    #            else (Count([path[a:b]] + [dv.rule[n]], transition[c]) < repetition[c])
-                 
-    #            for a,b,c in list(zip(index_set[:-1],index_set[1:], range(len(transition))))
-    #         ])
-    #             for sequence in dv.g.TOPDOWN_FORBIDDEN
-    #             if len(sequence) <= dv.max_depth
-    #             for repetition, transition in [make_helpers(sequence)]
-    #             for n, path in enumerate(dv.ancestor_rule)
-    #             for index_set in range_permutations(len(repetition)-1, 0, len(path))
-    # ]
+    constraints = []
+    for n in range(dv.max_n-1):
+        for indexing, sequence in dv.g.TOPDOWN_FORBIDDEN:
+            constraints.append(
+                any(
+                    [dv.topdown_rule_indexes[n][sequence[i]][indexing[i]] == (dv.max_depth+1) for i in range(len(sequence))]
+                ) | any(
+                    [(dv.topdown_rule_indexes[n][sequence[i]][indexing[i]] >= dv.topdown_rule_indexes[n][sequence[i+1]][indexing[i+1]]) for i in range(len(sequence)-1)]
+            )   )
+            
+    return constraints

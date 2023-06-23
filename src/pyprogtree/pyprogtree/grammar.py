@@ -25,6 +25,8 @@ class Grammar:
 
         print(f"tdo: {self.TOPDOWN_ORDERED}")
         print(f"tdd: {self.TOPDOWN_DIMENSIONS}")
+        print(f"tdf: {self.TOPDOWN_FORBIDDEN}")
+        print(f"tdfd: {self.TOPDOWN_REPEATS}")
 
     # Quick way to add new rules:
     def add_rule(self, name, returntype, childtypes):
@@ -71,7 +73,7 @@ class Grammar:
                 if len(const[1]) > 1:
                     self.store_traversal(const, self.LEFTRIGHT_ORDERED, self.LEFTRIGHT_DIMENSIONS, self.LEFTRIGHT_REPEATS)
             elif const[0] == "TDF":
-                self.store_traversal(const, self.TOPDOWN_ORDERED, self.TOPDOWN_DIMENSIONS)
+                self.store_traversal(const, self.TOPDOWN_FORBIDDEN, self.TOPDOWN_DIMENSIONS)
             elif const[0] == "O" or const[0] == "LO":
                 self.SUBTREE_ORDERED.append(const[1])
             elif const[0] == "F" or const[0] == "LF":
