@@ -29,7 +29,7 @@ class DecisionVariables:
         self.ancestor_rule          =  intvar(-1, g.NUMBER_OF_RULES - 1, shape=(max_n-1, max_depth),            name="AncestorRule")
         self.treesize               =  intvar( 1, max_n,                 shape=(max_n,),                        name="TreeSize")
         self.spaceship_1D           =  intvar(-1, 1,                     shape=(max_n-1)**3,                    name="<=>")
-        self.leftright_rule_indexes = [intvar(-1, max_n-1,               shape=(dim,),                          name=f"LeftRightRule{i}Indexes") 
+        self.leftright_rule_indexes = [intvar(-1, max_n-1,               shape=1,                               name=f"LeftRightRule{i}Indexes") 
                                        if dim > 0 
                                        else None 
                                        for i, dim in enumerate(g.LEFTRIGHT_DIMENSIONS)]
