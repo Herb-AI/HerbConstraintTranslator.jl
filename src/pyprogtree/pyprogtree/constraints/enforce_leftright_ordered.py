@@ -11,49 +11,9 @@ Enforces the leftright order in two ways:
        rule decision variable.
 """
 def enforce_leftright_ordered(dv: DecisionVariables): 
-    return [
-         
-         ([dv.rule[n] != sequence[too_long] for n in dv.max_n])
-         for sequence in dv.g.LEFTRIGHT_ORDERED
-         if len(sequence) > dv.max_n
-         for too_long in sequence[dv.max_n:]
+    constraints = []
+    for indexing, sequence in dv.g.LEFTRIGHT_ORDERED:
+        for i in range(1, len(sequence)):
+            constraints.append((dv.leftright_rule_indexes[sequence[i]][indexing[i]] <= dv.leftright_rule_indexes[sequence[i-1]][indexing[i-1]]))
 
-    ] + [
-         all(dv.rule[dv.max_n-1] != sequence[k] for k in range(1, len(sequence)))
-        for sequence in dv.g.LEFTRIGHT_ORDERED
-    ] + [
-         (dv.rule[n] == sequence[k]).implies (
-            Count(dv.rule[n+1:], sequence[k-1]) >= 1
-         )
-         for sequence in dv.g.LEFTRIGHT_ORDERED
-         for n in range(dv.max_n-1)
-         for k in range(1, len(sequence))
-    ]
-
-
-
-
-
-def make_loopies(vars, depth, acc=[0]):
-	if vars == 0:
-		yield acc+[depth]
-		return
-	for i in range(1, depth):
-		yield from make_loopies(vars - 1, depth, acc + [ i ])
-                
-def make_helpers(sequence):
-    transitions = [sequence[0]]
-    repetitions = []
-    last = sequence[0]
-    count = 0
-
-    for i in sequence:
-        if i != last:
-            repetitions.append(count)
-            count = 1
-            transitions.append(i)
-            last = i
-        else:
-            count += 1
-    repetitions.append(count)
-    return repetitions, transitions   
+    return constraints
