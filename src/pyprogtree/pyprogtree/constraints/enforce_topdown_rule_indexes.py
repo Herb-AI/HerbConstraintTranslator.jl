@@ -1,8 +1,17 @@
 from pyprogtree.decision_variables import DecisionVariables
 from cpmpy import *
 
+"""
+The decision variable topdown_rule_indexes is enforced using 5 constraints:
+    1. Repeats in sequences are forbidden from ever being selected as a rule in the rule dv.
+    2. Repeats in the sequences therefore always have index max_depth+1 in topdown_rule_indexes.
+    3. The first occurrence of a rule has the highest index where it occurs in the entire range
+       of the path in ancestor_rule, together with the terminal node in rule.
+    4. Later indexes of occurrences are set to max_depth+1, if the previous occurrence was also max_depth+1.
+    5. Later occurrences start checking the indexes until where their predecessor occurred.
+"""
 def enforce_topdown_rule_indexes(dv: DecisionVariables):
-    constraints = [
+    return [
         (dv.rule[node] != rule)
 
         for node in range(dv.max_n)
@@ -49,41 +58,3 @@ def enforce_topdown_rule_indexes(dv: DecisionVariables):
         for occurence in range(1, repeats)
         for d in range(occurence, dv.max_depth)
     ]
-
-    # for n in range(dv.max_n):
-        # for r in dv.g.TOPDOWN_REPEATS:
-            # constraints.append((dv.rule[n] != r))
-
-    # for n in range(dv.max_n - 1):
-    #     for r, repeats in enumerate(dv.g.TOPDOWN_DIMENSIONS):
-    #         for occurence in range(repeats):
-    #             if r in dv.g.TOPDOWN_REPEATS:
-    #                 # constraints.append(all(dv.topdown_rule_indexes[n][r] == (dv.max_depth+1)))
-    #                 break
-
-    #             if occurence == 0:
-    #                 constraints.append((
-    #                         min([   
-    #                             dv.max_depth+1,
-    #                             abs(dv.rule[n] - r) * (dv.max_depth+1) + dv.depth[n]
-    #                         ]+[
-    #                             ((abs(dv.ancestor_rule[n,d] - r) * (dv.max_depth+1) + d)) for d in range(dv.max_depth)
-    #                         ]) 
-    #                     == dv.topdown_rule_indexes[n][r][occurence])
-    #                 )
-    #             else:
-    #                 constraints.append((dv.topdown_rule_indexes[n][r][occurence-1]+1 < dv.max_depth) | (dv.topdown_rule_indexes[n][r][occurence] == dv.max_depth+1))
-    #                 constraints.extend(
-    #                     [((d != (dv.topdown_rule_indexes[n][r][occurence-1]+1)) | (
-    #                         min([   
-    #                                 dv.max_depth+1, 
-    #                                 abs(dv.rule[n] - r) * (dv.max_depth+1) + dv.depth[n]
-    #                             ]+[
-    #                                 ((abs(dv.ancestor_rule[n,d2] - r) * (dv.max_depth+1) + d2)) for d2 in range(d, dv.max_depth)
-    #                             ]) == dv.topdown_rule_indexes[n][r][occurence]
-    #                     ))
-    #                     for d in range(occurence,dv.max_depth)]
-    #                 )
-
-    return constraints
-
