@@ -10,11 +10,11 @@ def enforce_topdown_forbidden(dv: DecisionVariables):
         (any(
             [   dv.topdown_rule_indexes[n][sequence[i  ]][indexing[i  ]] 
                 == (dv.max_depth+1) 
-                
+
              for i in range(len(sequence))]
         ) | any(
             [(  dv.topdown_rule_indexes[n][sequence[i  ]][indexing[i  ]] 
-              > dv.topdown_rule_indexes[n][sequence[i+1]][indexing[i+1]]) 
+              >= dv.topdown_rule_indexes[n][sequence[i+1]][indexing[i+1]]) 
               
               for i in range(len(sequence)-1)]
         ))

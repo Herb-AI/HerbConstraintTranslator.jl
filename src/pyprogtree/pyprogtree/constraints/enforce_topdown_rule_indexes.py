@@ -49,14 +49,14 @@ def enforce_topdown_rule_indexes(dv: DecisionVariables):
     ] + [
             ((d != (dv.topdown_rule_indexes[n][r][occurence-1]+1)) |
             
-            min([
+            (min([
                 dv.max_depth+1, 
                 abs(dv.rule[n]              - r) * (dv.max_depth+1) + dv.depth[n]
                 ]+[
                 (abs(dv.ancestor_rule[n,d2] - r) * (dv.max_depth+1) + d2) 
                 for d2 in range(d, dv.max_depth)]
             
-            ) == dv.topdown_rule_indexes[n][r][occurence])
+            ) == dv.topdown_rule_indexes[n][r][occurence]))
 
         for n in range(dv.max_n - 1)
         for r, repeats in enumerate(dv.g.TOPDOWN_DIMENSIONS)
