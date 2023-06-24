@@ -13,24 +13,38 @@ The decision variable leftright_rule_indexes is enforced using 5 constraints:
 def enforce_leftright_rule_indexes(dv: DecisionVariables):
     return [
         (dv.rule[node] != rule)
+
         for node in range(dv.max_n)
         for rule in dv.g.LEFTRIGHT_REPEATS
     ] + [
+
         all(dv.leftright_rule_indexes[rule] == -1)
+
         for rule in range(len(dv.g.LEFTRIGHT_DIMENSIONS))
         if rule in dv.g.LEFTRIGHT_REPEATS
     ] + [
+
         (max([-1] + [abs(dv.rule[node] - rule) * (-1*dv.max_n) + node for node in range(dv.max_n)]) 
-         == dv.leftright_rule_indexes[rule][0])
+            == dv.leftright_rule_indexes[rule][0])
+
         for rule, repeats in enumerate(dv.g.LEFTRIGHT_DIMENSIONS)
         if repeats > 0
     ] + [
-        ((dv.leftright_rule_indexes[rule][occurrence-1] != -1) | (dv.leftright_rule_indexes[rule][occurrence] == -1))
+
+        ((dv.leftright_rule_indexes[rule][occurrence-1] != -1) | 
+         (dv.leftright_rule_indexes[rule][occurrence] == -1))
+
         for rule, repeats in enumerate(dv.g.LEFTRIGHT_DIMENSIONS)
         for occurrence in range(1,repeats)
     ] + [
-        ((node != dv.leftright_rule_indexes[rule][occurrence-1]+1) | 
-         (max([-1] + [abs(dv.rule[node2] - rule) * (-1*dv.max_n) + node2 for node2 in range(node)])))
+
+        ((node != dv.leftright_rule_indexes[rule][occurrence-1]+1
+          
+        ) | (
+        
+        max([-1] + [abs(dv.rule[node2] - rule) * (-1*dv.max_n) + node2 for node2 in range(node)]) 
+            == dv.leftright_rule_indexes[rule][occurrence]))
+
         for rule, repeats in enumerate(dv.g.LEFTRIGHT_DIMENSIONS)
         for occurrence in range(1,repeats)
         for node in range(dv.max_n - occurrence)
