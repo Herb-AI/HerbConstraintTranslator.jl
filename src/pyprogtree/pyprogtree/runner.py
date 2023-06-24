@@ -5,7 +5,7 @@ from pyprogtree.timeit import *
 
 @timeit
 def run(ruletypes, childtypes, typenames, rulenames, constraints, 
-        min_nodes=1, max_nodes=5, max_depth=4, solution_limit=None, plot_solutions=False):
+        min_nodes=1, max_nodes=3, max_depth=3, return_type=None, solution_limit=None, plot_solutions=False):
     # Convert input ndarrays to python lists
     ruletypes  = list(ruletypes)
     childtypes = list(map(list, childtypes))
@@ -15,7 +15,7 @@ def run(ruletypes, childtypes, typenames, rulenames, constraints,
     # Create a grammar from rules:
     g = Grammar(ruletypes, childtypes, typenames, rulenames, constraints)
     # Find a solution:
-    return solve(g, min_nodes, max_nodes, max_depth, solution_limit, plot_solutions)
+    return solve(g, min_nodes, max_nodes, max_depth, return_type, solution_limit, plot_solutions)
 
 if __name__ == "__main__":
     ruletypes  = [0, 0, 0, 1, 1]
