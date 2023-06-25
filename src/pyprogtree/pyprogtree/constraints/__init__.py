@@ -1,5 +1,5 @@
 from pyprogtree.constraints.enforce_depth_first_ordering import enforce_first_ordering
-from pyprogtree.constraints.enforce_tree import enforce_tree
+from pyprogtree.constraints.enforce_tree import enforce_tree, enforce_return_type
 from pyprogtree.constraints.enforce_ancestor_path import enforce_ancestor_path
 from pyprogtree.constraints.enforce_ancestor_rule import enforce_ancestor_rule
 from pyprogtree.constraints.enforce_child_index import enforce_child_index

@@ -7,7 +7,7 @@ from pyprogtree.constraints import *
 from pyprogtree.decision_variables import DecisionVariables
 from pyprogtree.plot_tree import plot_tree
 
-def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solutions=True):
+def solve(g, min_n, max_n, max_depth=None, return_type=None, solution_limit=100, plot_solutions=True):
     """
     Finds a feasible AST using global variables from 'csg_data.py', then plots it.
     :param g: grammar encoding
@@ -44,28 +44,9 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
         enforce_subtree_ordered(dv),
         #enforce_implied_constraints(dv)
     )
-    #print("DONE")
-
-    # # Fixed tree structure:
-    # model += (dv.rule[9] == dv.g.RULE_NAMES.index("?"))
-    # model += (dv.rule[8] == dv.g.RULE_NAMES.index("Not"))
-    # model += (dv.rule[7] == dv.g.RULE_NAMES.index("F"))
-    # model += (dv.rule[6] == dv.g.RULE_NAMES.index("3"))
-    # model += (dv.rule[5] == dv.g.RULE_NAMES.index("Sqrt"))
-    # model += (dv.rule[4] == dv.g.RULE_NAMES.index("Sqrt"))
-    # model += (dv.rule[3] == dv.g.RULE_NAMES.index("?"))
-    # model += (dv.rule[2] == dv.g.RULE_NAMES.index("T"))
-    # model += (dv.rule[1] == dv.g.RULE_NAMES.index("4"))
-    # model += (dv.rule[0] == dv.g.RULE_NAMES.index("4"))
-    #
-    # Manual forbidden
-    # node = MatchNode(2, children=[MatchNode(8), MatchNode(1), MatchNode(1)], fixed_index=3)
-    # node.setup(dv)
-    # model += constraint_local_forbidden(dv,node)
 
     # Begin timing of the search:
-    start_time = time()
-    time_measurements = [start_time]
+    time_measurements = [time()]
     search_timing = []
     # time measurements => [s, t0, t1, t2]
     # search timing     => [t0 - s, t1 - t0, t2 - t1]
@@ -89,36 +70,39 @@ def solve(g, min_n, max_n, max_depth=float("inf"), solution_limit=100, plot_solu
                     show_lambda_string=lambda n: f"{dv.child_index[n].value()}")
 
     #print(f"Solving the model... ")
-    solver: CPM_ortools = SolverLookup.get(None, model)
-    number_of_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
-    #print("")
+    start_time = time()
+    
+    if return_type == None:
+        # make a separate model per return type
+        model_real = model
+        model_bool = model.copy()
 
-    # print("PARENT:", dv.parent.value())
-    # print("CHILD INDEX:", dv.child_index.value())
-    # print("RULE: ", dv.rule.value())
-    # print("TOPDOWN_RULE: ", dv.topdown_rule_index.value())
-    # print("LEFTRIGHT_RULE: ", dv.leftright_rule_index.value())
-
-    #dv.compare_solutions()
-
-    # print(node.children[2]._location_exists().value())
-    # print(node.children[2].child_index)
-    # print(node.children[2].parent)
-    # print("-----")
-    # print(dv.child_index[0].value())
-    # print(dv.parent[0].value())
+        # run solver with Real as the return type
+        model_real += enforce_return_type(dv, 0)
+        solver: CPM_ortools = SolverLookup.get(None, model_real)
+        real_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
+        # run solver with Bool as the return type
+        model_bool += enforce_return_type(dv, 1)
+        solver: CPM_ortools = SolverLookup.get(None, model_bool)
+        bool_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
+        
+        number_of_solutions = real_solutions + bool_solutions
+    else:
+        model += enforce_return_type(dv, return_type)
+        solver: CPM_ortools = SolverLookup.get(None, model)
+        number_of_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
+    
+    end_time = time()
     
     print(f"Found {number_of_solutions} solutions")
 
     # Process the recorder timings:
-    end_time = time()
-    print("Total time elapsed: ", end_time - start_time)
+    total_time = end_time - start_time
+    print("Total time elapsed: ", total_time)
     print("Total sum of measurements: ", sum(search_timing))
     
     # Return and decision variables to reconstruct the full program tree
     return list(
         zip(map(lambda s: s['parent'][s['init_index']:] - s['init_index'], dv.solutions), 
-            map(lambda s: s['rule'][s['init_index']:], dv.solutions),
-            search_timing)
-    )
-
+            map(lambda s: s['rule'][s['init_index']:], dv.solutions))
+    ), search_timing, total_time
