@@ -19,7 +19,7 @@ class DecisionVariables:
         self.max_depth = max_depth
         #self.return_type = return_type
 
-        print("Setting up decision variables... ", end='')        
+        #print("Setting up decision variables... ", end='')        
         self.leftright_rule_indexes = [intvar(-1, max_n-1,               shape=1,                               name=f"LeftRightRule{i}Indexes") 
                                        if dim > 0 
                                        else None 
@@ -41,7 +41,7 @@ class DecisionVariables:
         self.parent                 =  intvar(-1, max_n-1,               shape=(max_n-1,),                      name="Parent")
         self.rule                   =  intvar( 0, g.NUMBER_OF_RULES - 1, shape=(max_n,),                        name="Rules")
         self.init_index             =  intvar( 0, max_n-min_n,           shape=1,                               name="InitialIndex")
-        print("DONE")
+        #print("DONE")
 
         self.solutions = []
 

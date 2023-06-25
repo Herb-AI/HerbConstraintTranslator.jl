@@ -24,7 +24,7 @@ def solve(g, min_n, max_n, max_depth=None, return_type=None, solution_limit=100,
     max_depth = min(max_n, max_depth)
     dv = DecisionVariables(g, min_n, max_n, max_depth, return_type)
 
-    #print("Setting up the model... ", end='')
+    print("Setting up the model... ", end='')
 
     model = Model(
         enforce_tree(dv),
@@ -69,7 +69,7 @@ def solve(g, min_n, max_n, max_depth=None, return_type=None, solution_limit=100,
                     show_empty_nodes=True,
                     show_lambda_string=lambda n: f"{dv.child_index[n].value()}")
 
-    #print(f"Solving the model... ")
+    print(f"Solving the model... ")
     start_time = time()
     
     if return_type == None:
@@ -94,12 +94,12 @@ def solve(g, min_n, max_n, max_depth=None, return_type=None, solution_limit=100,
     
     end_time = time()
     
-    print(f"Found {number_of_solutions} solutions")
+    #print(f"Found {number_of_solutions} solutions")
 
     # Process the recorder timings:
     total_time = end_time - start_time
-    print("Total time elapsed: ", total_time)
-    print("Total sum of measurements: ", sum(search_timing))
+    #print("Total time elapsed: ", total_time)
+    #print("Total sum of measurements: ", sum(search_timing))
     
     # Return and decision variables to reconstruct the full program tree
     return list(
