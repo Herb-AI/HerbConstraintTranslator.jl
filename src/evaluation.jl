@@ -342,7 +342,22 @@ constraints = [
     ]
 ]
 
-function runExperiments()
+#=
+    Prints the timing results into `output_filename` and 
+    any errors that might occur into `error_filename`.
+    Timing for a single run is formatted as follows:
+    
+    ConstraintType₁,..., ConstraintTypeₙ
+    max_node, max_depth
+    return_type
+    one | enum
+    herb_time
+    solution_count
+    cpmpy_time
+
+    Each run is separated by double new line.
+=#
+function run_experiments()
     max_depth = 4
     for max_nodes ∈ [4, 5, 6, 7], enum ∈ [false, true]
         ret = enum ? nothing : 1

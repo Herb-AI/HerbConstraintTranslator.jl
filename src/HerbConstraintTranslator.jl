@@ -11,6 +11,6 @@ include("evaluation.jl")
 
 export
     solve
-    runExperiments
+    run_experiments
 
 end # module HerbConstraintTranslator
