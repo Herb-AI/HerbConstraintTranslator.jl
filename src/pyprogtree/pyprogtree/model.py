@@ -80,17 +80,17 @@ def solve(g, min_n, max_n, max_depth=None, return_type=None, solution_limit=100,
         # run solver with Real as the return type
         model_real += enforce_return_type(dv, 0)
         solver: CPM_ortools = SolverLookup.get(None, model_real)
-        real_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
+        real_solutions = solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
         # run solver with Bool as the return type
         model_bool += enforce_return_type(dv, 1)
         solver: CPM_ortools = SolverLookup.get(None, model_bool)
-        bool_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
+        bool_solutions = solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
         
         number_of_solutions = real_solutions + bool_solutions
     else:
         model += enforce_return_type(dv, return_type)
         solver: CPM_ortools = SolverLookup.get(None, model)
-        number_of_solutions = solver.solveAll(display=callback, solution_limit=solution_limit)
+        number_of_solutions = solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
     
     end_time = time()
     
