@@ -70,36 +70,26 @@ def solve(g, min_n, max_n, max_depth=None, return_type=None, solution_limit=100,
 
     print(f"Solving the model... ")
     start_time = time()
-    
-    if return_type == None:
-        # make a separate model per return type
-        model_real = model
-        model_bool = model.copy()
 
-        # run solver with Real as the return type
-        model_real += enforce_return_type(dv, 0)
-        solver: CPM_ortools = SolverLookup.get(None, model_real)
-        real_solutions = solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
-        # run solver with Bool as the return type
-        model_bool += enforce_return_type(dv, 1)
-        solver: CPM_ortools = SolverLookup.get(None, model_bool)
-        bool_solutions = solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
-        
-        number_of_solutions = real_solutions + bool_solutions
+    if return_type == None:
+        for ret_typ in range(len(set(g.TYPES))):
+            # make a separate model per return type
+            model_rt = model.copy()
+
+            # run solver with Real as the return type
+            model_rt += enforce_return_type(dv, ret_typ)
+            solver: CPM_ortools = SolverLookup.get(None, model_rt)
+            solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
     else:
         model += enforce_return_type(dv, return_type)
         solver: CPM_ortools = SolverLookup.get(None, model)
-        number_of_solutions = solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
+        solver.solveAll(display=callback, solution_limit=solution_limit, preferred_variable_order=1)
     
     end_time = time()
     
-    #print(f"Found {number_of_solutions} solutions")
-
     # Process the recorder timings:
     total_time = end_time - start_time
-    #print("Total time elapsed: ", total_time)
-    #print("Total sum of measurements: ", sum(search_timing))
-    
+
     # Return and decision variables to reconstruct the full program tree
     return list(
         zip(map(lambda s: s['parent'][s['init_index']:] - s['init_index'], dv.solutions), 

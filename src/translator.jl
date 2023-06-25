@@ -13,10 +13,13 @@ rule_count = 0
 function solve(
     grammar::ContextSensitiveGrammar;
     min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, return_type::Union{Int, Nothing}=nothing, 
-    solution_limit::Union{Int, Nothing}=1, plot_solutions::Bool=true
+    solution_limit::Union{Int, Nothing}=1, plot_solutions::Bool=false
 )::TimedResults
     global rule_count = length(grammar.rules)
-    return_type -= 1
+    
+    if return_type !== nothing 
+        return_type -= 1
+    end
 
     # Encode the grammar:
     ruletypes, childtypes, typenames, rulenames = translate(grammar)
