@@ -172,7 +172,7 @@ function eval(
     if compare_with_herb
         start_time = time()
         if return_type !== nothing
-            ret = reverse(collect(keys(g.bytype)))[return_type]
+            ret = return_type == 1 ? :Real : :Bool
             herb_results = collect(HerbSearch.get_bfs_enumerator(g, max_depth, max_nodes, ret))
         else
             herb_results = append!(collect(
@@ -278,7 +278,7 @@ function runWith(max_nodes, max_depth, ret, enum, run_herb=true, css...)
                 r".*\.Herb.HerbConstraints\."=>""), ", ")
     label = label == "" ? "NoConstraints" : label
     quant = enum ? "enum" : "one"
-    return_type = ret === nothing ? "None" : ret
+    return_type = ret === nothing ? "None" : ret == 1 ? "Real" : "Bool"
     lines::Vector{Any} = [  
         label, 
         "$(max_nodes), $(max_depth)", 

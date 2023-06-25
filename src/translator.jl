@@ -16,6 +16,7 @@ function solve(
     solution_limit::Union{Int, Nothing}=1, plot_solutions::Bool=true
 )::TimedResults
     global rule_count = length(grammar.rules)
+    return_type -= 1
 
     # Encode the grammar:
     ruletypes, childtypes, typenames, rulenames = translate(grammar)

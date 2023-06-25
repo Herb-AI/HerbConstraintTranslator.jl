@@ -18,7 +18,6 @@ def solve(g, min_n, max_n, max_depth=None, return_type=None, solution_limit=100,
     :return:
     """
     if return_type != None:
-        return_type -= 1
         assert 0 <= return_type < len(g.TYPE_NAMES), "Return type out of bounds!"
 
     max_depth = min(max_n, max_depth)
