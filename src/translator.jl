@@ -6,6 +6,7 @@ from pyprogtree.match_node import MatchNode
 """
 
 GrammarEncoding = Tuple{Vector{Int}, Vector{Vector{Int}}, Vector{String}, Vector{String}}
+TimedResults = Tuple{Vector{Any}, Vector{Real}, Real}
 
 rule_count = 0
 
@@ -13,7 +14,7 @@ function solve(
     grammar::ContextSensitiveGrammar;
     min_nodes::Int=1, max_nodes::Int=15, max_depth::Int=4, return_type::Union{Int, Nothing}=nothing, 
     solution_limit::Union{Int, Nothing}=1, plot_solutions::Bool=true
-)
+)::TimedResults
     global rule_count = length(grammar.rules)
 
     # Encode the grammar:
@@ -21,13 +22,13 @@ function solve(
     constraints = map(translate_constraint, grammar.constraints)
 
     # Solve and obtain decision variables: list of (parent, rule) tuples
-    results = py"runner.run"(
+    results, ind_times, enum_time = py"runner.run"(
         ruletypes, childtypes, typenames, rulenames, constraints, 
         min_nodes, max_nodes, max_depth, return_type, solution_limit, plot_solutions
     )
     
     programs = Any[]
-    for (parent, rule, time) ∈ results
+    for (parent, rule) ∈ results
         parent = map(p -> convert(Int64, p) + 1, parent) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
         rule = map(r -> convert(Int64, r) + 1, rule) # Convert from Int32 to Int64 (for consistency) and shift by 1 to the right (Julia indices)
 
@@ -35,10 +36,10 @@ function solve(
         program_tree = decode(parent, rule)
 
         # Convert the MatchNode program tree into a Julia expression and add to programs
-        push!(programs, (matchnode2expr(program_tree, grammar), time))
+        push!(programs, matchnode2expr(program_tree, grammar))
     end
 
-    return programs
+    return programs, ind_times, enum_time
 end
 
 guarded_reindex(i::Int)::Int = 0 < i ≤ rule_count ? i - 1 : error("rule $(i) out of bounds")

@@ -53,7 +53,7 @@ function enumerate_herb_solutions(g::Grammar; max_depth::Int, max_nodes::Int)::V
     return solutions_herb
 end
 
-function enumerate_cpmpy_solutions(g::Grammar; max_nodes::Int, max_depth::Int, solution_limit::Int, plot_solutions::Bool)::Vector{Tuple{Any, Float64}}
+function enumerate_cpmpy_solutions(g::Grammar; max_nodes::Int, max_depth::Int, solution_limit::Int, plot_solutions::Bool)::Tuple{Vector{Any}, Vector{Float64}, Float64}
     return HerbConstraintTranslator.solve(g, max_nodes=max_nodes, max_depth=max_depth, solution_limit=solution_limit, plot_solutions=plot_solutions)
 end
 
@@ -83,8 +83,8 @@ function unzip(xs)
     return map(fst(), xs), map(snd(), xs)
 end
 
-function plot_all_solutions(experiment::String, solutions_cpmpy::Vector{Tuple{Any, Float64}}, solutions_herb::Vector{Tuple{Any, Float64}})
-    programs_cpmpy, time_cpmpy = unzip(solutions_cpmpy)
+function plot_all_solutions(experiment::String, solutions_cpmpy::Tuple{Vector{Any}, Vector{Float64}, Float64}, solutions_herb::Vector{Tuple{Any, Float64}})
+    programs_cpmpy, time_cpmpy, _ = solutions_cpmpy
     programs_herb, time_herb = unzip(solutions_herb)
 
     time_cpmpy_cum = cumsum(time_cpmpy)
