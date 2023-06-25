@@ -1,43 +1,34 @@
 from pyprogtree.decision_variables import DecisionVariables
 from cpmpy import *
 
+"""
+The decision variable leftright_rule_indexes is enforced using 5 constraints:
+    1. Repeats in sequences are forbidden from ever being selected as a rule in the rule dv.
+    2. Repeats in the sequences therefore always have index -1 in leftright_rule_indexes
+    3. The first occurrence of a rule has the highest index where it occurs in the entire range
+       of the rule dv.
+"""
 def enforce_leftright_rule_indexes(dv: DecisionVariables):
-    constraints = []
+    return [
+        (dv.rule[n] != rule)
 
-    for n in range(dv.max_n):
-        for r in dv.g.LEFTRIGHT_REPEATS:
-            constraints.append((dv.rule[n] != r))
+        for n in range(dv.max_n)
+        for rule in dv.g.LEFTRIGHT_REPEATS
 
-    for r, repeats in enumerate(dv.g.LEFTRIGHT_DIMENSIONS):
-        for occurence in range(repeats):
-            if r in dv.g.LEFTRIGHT_REPEATS:
-                constraints.append(all(dv.leftright_rule_indexes[r] == -1))
-                break
+    ] + [
+        (dv.leftright_rule_indexes[rule] == -1)
 
-            if occurence == 0:
-                constraints.append((
-                        max(
-                            [
-                                -1
-                            ]+[
-                                abs(dv.rule[n] - r) * (-1*dv.max_n) + n
-                                for n in range(dv.max_n)
-                            ]
-                            )
-                    == dv.leftright_rule_indexes[r][occurence])
-                )
-            else:
-                constraints.append((dv.leftright_rule_indexes[r][occurence-1] != -1) | (dv.leftright_rule_indexes[r][occurence] == -1))
-                constraints.extend(
-                    [((n != (dv.leftright_rule_indexes[r][occurence-1]+1)) | (
-                        max([
-                                -1
-                                ]+[ 
-                                abs(dv.rule[n2] - r) * (-1*dv.max_n) + dv.depth[n2] for n2 in range(n)
-                            ]) == dv.leftright_rule_indexes[r][occurence]
-                    ))
-                    for n in range(dv.max_n-occurence)]
-                )
+        for rule, repeats in enumerate(dv.g.LEFTRIGHT_DIMENSIONS)
+        if  repeats > 0 and rule in dv.g.LEFTRIGHT_REPEATS
 
-    return constraints
+    ] + [
+        max([-1
+            ]+[
+            abs(dv.rule[n] - rule) * (-1*dv.max_n) + n 
+            for n in range(dv.max_n)
+            ]) == dv.leftright_rule_indexes[rule]
 
+        for rule, repeats in enumerate(dv.g.LEFTRIGHT_DIMENSIONS)
+        if  repeats > 0
+
+    ] 
