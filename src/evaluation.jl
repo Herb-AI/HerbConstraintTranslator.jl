@@ -1,3 +1,6 @@
+const output_filename = "timing.txt"
+const error_filename  = "err.txt"    
+
 @enum Type TInt=1 TBool=2
 
 Term = Union{Expr, Symbol, Int}
@@ -145,20 +148,9 @@ function diff_args(ours, theirs)
     (extras, missed)
 end
 
-function trimTiming(filename::String)::Vector{String}
-    text = open(filename) do file
-        read(file, String)
-    end
-    pattern = r"init grammar\nSetting up decision variables... DONE\nSetting up the model... (return type set to [01])?\nDONE\nSolving the model...\n\n"
-    blocks = split(replace(text, pattern=>""), "\n\n")
-    lineblocks = split.(blocks, "\n")
-    deleteat!.(lineblocks, 3)
-    blocks = join.(lineblocks, "\n")
-end
-
 function eval(
     g::ContextSensitiveGrammar, max_nodes::Int, max_depth::Int, return_type::Union{Int, Nothing}=nothing;
-    break_symm=false, compare_with_herb=true, solution_limit=nothing,
+    break_symm=false, compare_with_herb=true, enum=true,
     filename="eval.txt", label=nothing
 )
     failed = false
@@ -197,6 +189,7 @@ function eval(
         outputln("Herb found $(length(herb_results)) solutions")
     end
 
+    solution_limit = enum ? nothing : 1
     our_results, ind_times, enum_time = HerbConstraintTranslator.solve(
         g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, return_type=return_type, 
         solution_limit=solution_limit, plot_solutions=false
@@ -220,7 +213,8 @@ function eval(
         foreach(outputln, type_errors)
     end
 
-    if break_symm
+    # find duplicates up to commutativity of `+` and `&&` enforced by Ordered constraints
+    if break_symm && enum
         our_original = deepcopy(our_results)
         HerbConstraintTranslator.canonicalize!.(our_results)
 
@@ -244,7 +238,7 @@ function eval(
         if count > 0 outputln("$(count) total duplicates") end
     end
 
-    if compare_with_herb && solution_limit === nothing
+    if compare_with_herb && enum
         if break_symm
             herb_original = deepcopy(herb_results)
             HerbConstraintTranslator.canonicalize!.(herb_results)
@@ -276,3 +270,93 @@ function eval(
     return ind_times, enum_time, herb_time, length(our_results)
 end
 
+function runWith(max_nodes, max_depth, ret, enum, run_herb=true, css...)
+    g.constraints = append!(Constraint[], css...)
+    break_symm = any(isa.(first.(css), Ordered))
+    label = join(replace.(
+                css .|> first .|> typeof .|> string, 
+                r".*\.Herb.HerbConstraints\."=>""), ", ")
+    label = label == "" ? "NoConstraints" : label
+    quant = enum ? "enum" : "one"
+    return_type = ret === nothing ? "None" : ret
+    lines::Vector{Any} = [  
+        label, 
+        "$(max_nodes), $(max_depth)", 
+        return_type,
+        quant
+    ]
+    try
+        _, our_time, herb_time, count = eval(
+            g, max_nodes, max_depth, ret,
+            enum=enum, compare_with_herb=run_herb, break_symm=break_symm, label=label, filename=nothing
+        )
+        push!(lines, herb_time, count, our_time)
+        out_file = open(output_filename, "a")
+        write(out_file, join(string.(lines) .* "\n"), "\n")
+        close(out_file)
+    catch err
+        push!(lines, err)
+        err_file = open(error_filename, "a")
+        write(err_file, join(string.(lines) .* "\n"), "\n")
+        close(err_file)
+    end
+end
+
+TopDownOrdered = ComesAfter
+TopDownForbidden = ForbiddenPath
+LeftRightOrdered = RequireOnLeft
+
+g = HerbGrammar.@csgrammar begin
+    Real = |(0:1)               #1/2
+    Real = Bool ? Real : Real   #3
+    Real = Sqrt(Real)           #4
+    Bool = Not(Bool)            #5
+    Bool = Bool && Bool         #6
+    Real = Real + Real          #7
+    Bool = Real >= Real         #8
+    Bool = T                    #9
+    Bool = F                    #10
+end
+
+constraints = [
+    [
+        TopDownOrdered(1, [4]),
+        TopDownOrdered(9, [3, 6])
+    ],
+    [
+        TopDownForbidden([4, 4]),
+        TopDownForbidden([6, 10]),
+    ],
+    [
+        LeftRightOrdered([4, 1]),
+        LeftRightOrdered([1, 2])
+    ],
+    [
+        Ordered(MatchNode(6, [MatchVar(:x), MatchVar(:y)]), [:x, :y]),
+        Ordered(MatchNode(7, [MatchVar(:x), MatchVar(:y)]), [:x, :y])
+    ],
+
+    [
+        Forbidden(MatchNode(3, [MatchVar(:x), MatchVar(:y), MatchVar(:y)])),
+        Forbidden(MatchNode(5, [MatchNode(5)]))
+    ]
+]
+
+function runExperiments()
+    max_depth = 4
+    for max_nodes ∈ [4, 5, 6, 7], enum ∈ [false, true]
+        ret = enum ? nothing : 1
+        # each constraint by itself
+        for cs ∈ constraints
+            runWith(max_nodes, max_depth, ret, enum, true, cs)
+        end
+        # all pairs
+        for (i, cs₁) ∈ enumerate(constraints)
+            for cs₂ ∈ constraints[i+1:end]
+                runWith(max_nodes, max_depth, ret, enum, true, cs₁, cs₂)
+            end
+        end
+        # all toghether
+        runWith(max_nodes, max_depth, ret, enum, true, constraints...)
+    end
+end
