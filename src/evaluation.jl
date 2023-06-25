@@ -261,11 +261,11 @@ function eval(
         end
     end
 
-    if failed error("sanity checks failed!") end
-        
     if print_to_file 
         close(file)
     end
+
+    if failed error("sanity checks failed!") end    
 
     return ind_times, enum_time, herb_time, length(our_results)
 end
