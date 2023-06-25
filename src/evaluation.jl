@@ -172,7 +172,9 @@ function eval(
 
     header = if label !== nothing "\n====$(label)====" else "\n=======================" end
 
-    outputln(header)
+    if print_to_file outputln(header) end
+
+    println(header)
 
     herb_time = nothing
     if compare_with_herb
@@ -191,9 +193,9 @@ function eval(
         herb_results = map(herb_results) do node
             HerbGrammar.rulenode2expr(node, g)
         end
-    end
 
-    outputln("Herb found $(length(herb_results)) solutions")
+        outputln("Herb found $(length(herb_results)) solutions")
+    end
 
     our_results, ind_times, enum_time = HerbConstraintTranslator.solve(
         g, min_nodes=1, max_nodes=max_nodes, max_depth=max_depth, return_type=return_type, 
@@ -242,7 +244,7 @@ function eval(
         if count > 0 outputln("$(count) total duplicates") end
     end
 
-    if compare_with_herb
+    if compare_with_herb && solution_limit === nothing
         if break_symm
             herb_original = deepcopy(herb_results)
             HerbConstraintTranslator.canonicalize!.(herb_results)
@@ -265,7 +267,6 @@ function eval(
         end
     end
 
-    
     if failed error("sanity checks failed!") end
         
     if print_to_file 
