@@ -5,7 +5,6 @@ using ..HerbGrammar
 using ..HerbSearch
 using ..HerbConstraints
 
-include("init_env.jl")
 include("translator.jl")
 include("evaluation.jl")
 
